@@ -15,7 +15,7 @@
 #define TFT_MISO 12 //     13 or 37
 
 #define TFT_DC   26
-#define TFT_RST  -1
+#define TFT_RST  25
 
 #define TOUCH_CS -1
 

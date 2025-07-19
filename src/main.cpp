@@ -191,6 +191,10 @@ void CAN_setSensor(const __u8 *canData, __u8 canPacketSize, __u32 canId)
     fn_Debug(data);
     break;
 
+  case RPM_ID:
+    fn_RPM(data);
+    break;
+
   default:
     Serial.print("ID: ");
     Serial.println(canId);
@@ -292,6 +296,11 @@ void fn_Data_08(__u8 data[DATA_08_DLC])
 void fn_Data_09(__u8 data[DATA_09_DLC])
 {
 }
+
+void fn_RPM(__u8 data[RPM_DLC]){
+  uint16_t RPM = ((data[1] & 0x3F) << 8) | data[0];
+  sensorUpdate(RPM,RPM_Sensor.index);
+} 
 
 void fn_Buffer_Ack(__u8 data[BUFFER_ACK_DLC])
 {
@@ -706,7 +715,7 @@ __u8 debugScreen(bool clear){
     Sensor2 = Wheel_Spd_FL_Sensor;
     Sensor3 = Wheel_Spd_RR_Sensor;
     Sensor4 = Wheel_Spd_RL_Sensor;
-    Sensor5 = SteerWheel_Pos_Sensor; 
+    Sensor5 = RPM_Sensor; 
     bool print =0;
     uint8_t time=0;
     if (row_write==0){

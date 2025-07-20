@@ -32,7 +32,7 @@ __u16 displayHEX(const char* hexcode);
 
 extern __u16 bg_color;
 
-void writeCenterText(String value, __u8 textsize,const __u8 font_style, __u16 textcolor, __u16 x, __u16 y);
+/*void writeCenterText(String value, __u8 textsize,const __u8 font_style, __u16 textcolor, __u16 x, __u16 y);
 void writeTopCenterText(String value, __u8 textsize,const __u8 font_style, __u16 textcolor, __u16 x, __u16 y);
 void writeBottomCenterText(String value, __u8 textsize,const __u8 font_style, __u16 textcolor, __u16 x, __u16 y);
 void writeLeftText(String value, __u8 textsize,const __u8 font_style, __u16 textcolor, __u16 x, __u16 y);
@@ -40,7 +40,7 @@ void writeTopLeftText(String value, __u8 textsize,const __u8 font_style, __u16 t
 void writeBottomLeftText(String value, __u8 textsize,const __u8 font_style, __u16 textcolor, __u16 x, __u16 y);
 void writeRightText(String value, __u8 textsize,const __u8 font_style, __u16 textcolor, __u16 x, __u16 y);
 void writeTopRightText(String value, __u8 textsize,const __u8 font_style, __u16 textcolor, __u16 x, __u16 y);
-void writeBottomRightText(String value, __u8 textsize,const __u8 font_style, __u16 textcolor, __u16 x, __u16 y);
+void writeBottomRightText(String value, __u8 textsize,const __u8 font_style, __u16 textcolor, __u16 x, __u16 y);*/
 
 extern __u8 actual_screen;
 

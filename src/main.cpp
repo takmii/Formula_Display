@@ -1,5 +1,187 @@
 #include <setup.h>
 
+class DisplayObject{
+  private:
+  String value="$";
+  String oldValue;
+  bool isWritten;
+  signed char factor_x=0;
+  signed char factor_y=0;
+  unsigned char alignment=0;
+  unsigned char datum;
+  public:
+  unsigned char size = 4;
+  unsigned char font = 1;
+  unsigned short pos_x;
+  unsigned short pos_y;
+  unsigned short length;
+  unsigned short height;
+  unsigned short color=displayRGB(255,255,255);
+
+  void writeCenterText(String value){
+    this->alignment=5;
+    const char * text = this->value.c_str();
+    this->size = min(this->size,max_size);
+    if (this->font==2){
+        this->factor_x= this->size/2;
+        this->factor_y= 0;
+    }
+    this->datum = MC_DATUM;
+    tft.setTextFont(this->font);
+    tft.setTextDatum(MC_DATUM);
+    tft.setTextColor(this->color, bg_color); // Text color and background
+    tft.setTextSize(this->size); // Scale 1 (default) to 7; doesn't affect all fonts
+    tft.drawString(text,this->pos_x+factor_x,this->pos_y+factor_y); // (text, x, y, font)
+    
+}
+
+void writeTopCenterText(String value){
+    this->alignment=8;
+    const char * text = value.c_str();
+    this->value = value;
+    this->size = min(this->size,max_size);
+    __u8 factor_x = 0;
+    __u8 factor_y = 0;
+    if (this->font==2){
+        factor_x= textsize/2;
+        factor_y=(factor2*textsize)-2;
+    }
+    tft.setTextFont(font_style);
+    tft.setTextDatum(TC_DATUM);
+    tft.setTextColor(textcolor, bg_color); // Text color and background
+    tft.setTextSize(textsize); // Scale 1 (default) to 7; doesn't affect all fonts
+    tft.drawString(text,x+factor_x,y-factor_y); // (text, x, y, font)
+}
+
+void writeBottomCenterText(String value){
+    this->alignment=2;
+    const char * text = value.c_str();
+    textsize = min(textsize,max_size);
+    __u8 factor_x = 0;
+    __u8 factor_y = 0;
+    if (font_style==2){
+        factor_x= textsize/2;
+        factor_y=(factor2*textsize)-1;
+    }
+    tft.setTextFont(font_style);
+    tft.setTextDatum(BC_DATUM);
+    tft.setTextColor(textcolor, bg_color); // Text color and background
+    tft.setTextSize(textsize); // Scale 1 (default) to 7; doesn't affect all fonts
+    tft.drawString(text,x+factor_x,y+factor_y); // (text, x, y, font)
+}
+
+
+void writeLeftText(String value, __u8 textsize,const __u8 font_style, __u16 textcolor, __u16 x, __u16 y){
+    const char * text = value.c_str();
+    textsize = min(textsize,max_size);
+    __u8 factor_x = 0;
+    __u8 factor_y = 0;
+    if (font_style==2){
+        factor_x= 2;
+    }
+    tft.setTextFont(font_style);
+    tft.setTextDatum(ML_DATUM);
+    tft.setTextColor(textcolor, bg_color); // Text color and background
+    tft.setTextSize(textsize); // Scale 1 (default) to 7; doesn't affect all fonts
+    tft.drawString(text,x+factor_x,y+factor_y); // (text, x, y, font)
+}
+
+void writeTopLeftText(String value, __u8 textsize,const __u8 font_style, __u16 textcolor, __u16 x, __u16 y){
+    const char * text = value.c_str();
+    textsize = min(textsize,max_size);
+    __u8 factor_x = 0;
+    __u8 factor_y = 0;
+    if (font_style==2){
+        factor_x= 2;
+        factor_y=(factor2*textsize)-2;
+    }
+    tft.setTextFont(font_style);
+    tft.setTextDatum(TL_DATUM);
+    tft.setTextColor(textcolor, bg_color); // Text color and background
+    tft.setTextSize(textsize); // Scale 1 (default) to 7; doesn't affect all fonts
+    tft.drawString(text,x+factor_x,y-factor_y); // (text, x, y, font)
+}
+
+void writeBottomLeftText(String value, __u8 textsize,const __u8 font_style, __u16 textcolor, __u16 x, __u16 y){
+    const char * text = value.c_str();
+    textsize = min(textsize,max_size);
+    __u8 factor_x = 0;
+    __u8 factor_y = 0;
+    if (font_style==2){
+        factor_x= 1;
+        factor_y=(factor2*textsize)-1;
+    }
+    tft.setTextFont(font_style);
+    tft.setTextDatum(BL_DATUM);
+    tft.setTextColor(textcolor, bg_color); // Text color and background
+    tft.setTextSize(textsize); // Scale 1 (default) to 7; doesn't affect all fonts
+    tft.drawString(text,x+factor_x,y+factor_y); // (text, x, y, font)
+}
+
+
+void writeRightText(String value, __u8 textsize,const __u8 font_style, __u16 textcolor, __u16 x, __u16 y){
+    const char * text = value.c_str();
+    textsize = min(textsize,max_size);
+    __u8 factor_x = 0;
+    __u8 factor_y = 0;
+    if (font_style==2){
+        factor_x= textsize-1;
+    }
+    tft.setTextFont(font_style);
+    tft.setTextDatum(MR_DATUM);
+    tft.setTextColor(textcolor, bg_color); // Text color and background
+    tft.setTextSize(textsize); // Scale 1 (default) to 7; doesn't affect all fonts
+    tft.drawString(text,x+factor_x,y+factor_y); // (text, x, y, font)
+}
+
+void writeTopRightText(String value, __u8 textsize,const __u8 font_style, __u16 textcolor, __u16 x, __u16 y){
+    const char * text = value.c_str();
+    textsize = min(textsize,max_size);
+    __u8 factor_x = 0;
+    __u8 factor_y = 0;
+    if (font_style==2){
+        factor_x= textsize-1;
+        factor_y=(factor2*textsize)-2;
+    }
+    tft.setTextFont(font_style);
+    tft.setTextDatum(TR_DATUM);
+    tft.setTextColor(textcolor, bg_color); // Text color and background
+    tft.setTextSize(textsize); // Scale 1 (default) to 7; doesn't affect all fonts
+    tft.drawString(text,x+factor_x,y-factor_y); // (text, x, y, font)
+}
+
+void writeBottomRightText(String value, __u8 textsize,const __u8 font_style, __u16 textcolor, __u16 x, __u16 y){
+    const char * text = value.c_str();
+    textsize = min(textsize,max_size);
+    __s8 factor_x = 0;
+    __s8 factor_y = 0;
+    if (font_style==2){
+        factor_x= textsize-1;
+        factor_y=(factor2*textsize)-1;
+    }
+    tft.setTextFont(font_style);
+    tft.setTextDatum(BR_DATUM);
+    tft.setTextColor(textcolor, bg_color); // Text color and background
+    tft.setTextSize(textsize); // Scale 1 (default) to 7; doesn't affect all fonts
+    tft.drawString(text,x+factor_x,y+factor_y); // (text, x, y, font)
+}
+
+  void refreshValue(){
+
+
+    tft.setTextFont(this->font);
+    tft.setTextDatum(this->datum);
+    tft.setTextColor(bg_color, bg_color); // Text color and background
+    tft.setTextSize(this->size); // Scale 1 (default) to 7; doesn't affect all fonts
+    tft.drawString(this->oldValue.c_str(),this->pos_x+this->factor_x,this->pos_y+this->factor_y); // (text, x, y, font)
+
+
+    tft.setTextColor(this->color, bg_color);
+    tft.drawString(this->value.c_str(),this->pos_x+this->factor_x,this->pos_y+this->factor_y); // (text, x, y, font)
+    this->oldValue=this->value;
+  }
+};
+
 char sensorValues[BUFFER_NUMBER][BUFFER_LENGTH][MAX_SENSORS][BUFFER_SIZE];
 uint32_t timeValues[BUFFER_NUMBER][BUFFER_LENGTH];
 
@@ -459,149 +641,7 @@ __u16 displayHEX(const char* hexcode) {
     return (((rgb >> 19) & 0x1F)) |(((rgb >> 10) & 0x3F) << 5)|(((rgb >> 3)  & 0x1F) << 11);
 }
 
-void writeCenterText(String value, __u8 textsize,const __u8 font_style, __u16 textcolor, __u16 x, __u16 y){
-    const char * text = value.c_str();
-    textsize = min(textsize,max_size);
-    __u8 factor_x = 0;
-    __u8 factor_y = 0;
-    if (font_style==2){
-        factor_x= textsize/2;
-    }
-    tft.setTextFont(font_style);
-    tft.setTextDatum(MC_DATUM);
-    tft.setTextColor(textcolor, bg_color); // Text color and background
-    tft.setTextSize(textsize); // Scale 1 (default) to 7; doesn't affect all fonts
-    tft.drawString(text,x+factor_x,y+factor_y); // (text, x, y, font)
-    
-}
 
-void writeTopCenterText(String value, __u8 textsize,const __u8 font_style, __u16 textcolor, __u16 x, __u16 y){
-    const char * text = value.c_str();
-    textsize = min(textsize,max_size);
-    __u8 factor_x = 0;
-    __u8 factor_y = 0;
-    if (font_style==2){
-        factor_x= textsize/2;
-        factor_y=(factor2*textsize)-2;
-    }
-    tft.setTextFont(font_style);
-    tft.setTextDatum(TC_DATUM);
-    tft.setTextColor(textcolor, bg_color); // Text color and background
-    tft.setTextSize(textsize); // Scale 1 (default) to 7; doesn't affect all fonts
-    tft.drawString(text,x+factor_x,y-factor_y); // (text, x, y, font)
-}
-
-void writeBottomCenterText(String value, __u8 textsize,const __u8 font_style, __u16 textcolor, __u16 x, __u16 y){
-    const char * text = value.c_str();
-    textsize = min(textsize,max_size);
-    __u8 factor_x = 0;
-    __u8 factor_y = 0;
-    if (font_style==2){
-        factor_x= textsize/2;
-        factor_y=(factor2*textsize)-1;
-    }
-    tft.setTextFont(font_style);
-    tft.setTextDatum(BC_DATUM);
-    tft.setTextColor(textcolor, bg_color); // Text color and background
-    tft.setTextSize(textsize); // Scale 1 (default) to 7; doesn't affect all fonts
-    tft.drawString(text,x+factor_x,y+factor_y); // (text, x, y, font)
-}
-
-
-void writeLeftText(String value, __u8 textsize,const __u8 font_style, __u16 textcolor, __u16 x, __u16 y){
-    const char * text = value.c_str();
-    textsize = min(textsize,max_size);
-    __u8 factor_x = 0;
-    __u8 factor_y = 0;
-    if (font_style==2){
-        factor_x= 2;
-    }
-    tft.setTextFont(font_style);
-    tft.setTextDatum(ML_DATUM);
-    tft.setTextColor(textcolor, bg_color); // Text color and background
-    tft.setTextSize(textsize); // Scale 1 (default) to 7; doesn't affect all fonts
-    tft.drawString(text,x+factor_x,y+factor_y); // (text, x, y, font)
-}
-
-void writeTopLeftText(String value, __u8 textsize,const __u8 font_style, __u16 textcolor, __u16 x, __u16 y){
-    const char * text = value.c_str();
-    textsize = min(textsize,max_size);
-    __u8 factor_x = 0;
-    __u8 factor_y = 0;
-    if (font_style==2){
-        factor_x= 2;
-        factor_y=(factor2*textsize)-2;
-    }
-    tft.setTextFont(font_style);
-    tft.setTextDatum(TL_DATUM);
-    tft.setTextColor(textcolor, bg_color); // Text color and background
-    tft.setTextSize(textsize); // Scale 1 (default) to 7; doesn't affect all fonts
-    tft.drawString(text,x+factor_x,y-factor_y); // (text, x, y, font)
-}
-
-void writeBottomLeftText(String value, __u8 textsize,const __u8 font_style, __u16 textcolor, __u16 x, __u16 y){
-    const char * text = value.c_str();
-    textsize = min(textsize,max_size);
-    __u8 factor_x = 0;
-    __u8 factor_y = 0;
-    if (font_style==2){
-        factor_x= 1;
-        factor_y=(factor2*textsize)-1;
-    }
-    tft.setTextFont(font_style);
-    tft.setTextDatum(BL_DATUM);
-    tft.setTextColor(textcolor, bg_color); // Text color and background
-    tft.setTextSize(textsize); // Scale 1 (default) to 7; doesn't affect all fonts
-    tft.drawString(text,x+factor_x,y+factor_y); // (text, x, y, font)
-}
-
-
-void writeRightText(String value, __u8 textsize,const __u8 font_style, __u16 textcolor, __u16 x, __u16 y){
-    const char * text = value.c_str();
-    textsize = min(textsize,max_size);
-    __u8 factor_x = 0;
-    __u8 factor_y = 0;
-    if (font_style==2){
-        factor_x= textsize-1;
-    }
-    tft.setTextFont(font_style);
-    tft.setTextDatum(MR_DATUM);
-    tft.setTextColor(textcolor, bg_color); // Text color and background
-    tft.setTextSize(textsize); // Scale 1 (default) to 7; doesn't affect all fonts
-    tft.drawString(text,x+factor_x,y+factor_y); // (text, x, y, font)
-}
-
-void writeTopRightText(String value, __u8 textsize,const __u8 font_style, __u16 textcolor, __u16 x, __u16 y){
-    const char * text = value.c_str();
-    textsize = min(textsize,max_size);
-    __u8 factor_x = 0;
-    __u8 factor_y = 0;
-    if (font_style==2){
-        factor_x= textsize-1;
-        factor_y=(factor2*textsize)-2;
-    }
-    tft.setTextFont(font_style);
-    tft.setTextDatum(TR_DATUM);
-    tft.setTextColor(textcolor, bg_color); // Text color and background
-    tft.setTextSize(textsize); // Scale 1 (default) to 7; doesn't affect all fonts
-    tft.drawString(text,x+factor_x,y-factor_y); // (text, x, y, font)
-}
-
-void writeBottomRightText(String value, __u8 textsize,const __u8 font_style, __u16 textcolor, __u16 x, __u16 y){
-    const char * text = value.c_str();
-    textsize = min(textsize,max_size);
-    __u8 factor_x = 0;
-    __u8 factor_y = 0;
-    if (font_style==2){
-        factor_x= textsize-1;
-        factor_y=(factor2*textsize)-1;
-    }
-    tft.setTextFont(font_style);
-    tft.setTextDatum(BR_DATUM);
-    tft.setTextColor(textcolor, bg_color); // Text color and background
-    tft.setTextSize(textsize); // Scale 1 (default) to 7; doesn't affect all fonts
-    tft.drawString(text,x+factor_x,y+factor_y); // (text, x, y, font)
-}
 
 
 __u8 screen1(bool clear){

@@ -3,13 +3,14 @@
 
 
 
+
 #include <Arduino.h>
 #include <TFT_eSPI.h>
-
 #include <SPI.h>
 #include <pins.h>
 #include <sensorsSetup.h>
 #include <variables.h>
+#include <vector>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include "esp_bt.h"
@@ -32,28 +33,22 @@ __u16 displayHEX(const char* hexcode);
 
 extern __u16 bg_color;
 
-/*void writeCenterText(String value, __u8 textsize,const __u8 font_style, __u16 textcolor, __u16 x, __u16 y);
-void writeTopCenterText(String value, __u8 textsize,const __u8 font_style, __u16 textcolor, __u16 x, __u16 y);
-void writeBottomCenterText(String value, __u8 textsize,const __u8 font_style, __u16 textcolor, __u16 x, __u16 y);
-void writeLeftText(String value, __u8 textsize,const __u8 font_style, __u16 textcolor, __u16 x, __u16 y);
-void writeTopLeftText(String value, __u8 textsize,const __u8 font_style, __u16 textcolor, __u16 x, __u16 y);
-void writeBottomLeftText(String value, __u8 textsize,const __u8 font_style, __u16 textcolor, __u16 x, __u16 y);
-void writeRightText(String value, __u8 textsize,const __u8 font_style, __u16 textcolor, __u16 x, __u16 y);
-void writeTopRightText(String value, __u8 textsize,const __u8 font_style, __u16 textcolor, __u16 x, __u16 y);
-void writeBottomRightText(String value, __u8 textsize,const __u8 font_style, __u16 textcolor, __u16 x, __u16 y);*/
+
 
 extern __u8 actual_screen;
 
 void switchScreen(bool direction, __u16 bg_color);
-__u8 screen1(bool clear);
-__u8 screen2(bool clear);
-__u8 screen3(bool clear);
-__u8 debugScreen(bool clear);
+__u8 screen1();
+__u8 screen2();
+__u8 screen3();
+__u8 debugScreen();
 
 void Calibracao(void *parameter);
+void refreshRateTask(void *parameter);
 void CAN_receiveTask(void *parameter);
 void disableBluetooth();
 
+void displaySetScreen(uint8_t id);
 
 void CAN_setSensor(const __u8 *canData, __u8 canPacketSize,__u32 canId);
 
@@ -92,6 +87,9 @@ void sensorUpdate(T value, __u8 index);
 #define BUFFER_NUMBER 2
 #define MAX_SENSORS 42
 #define BUFFER_SIZE 7
+
+#define REFRESH_RATE 30
+#define REFRESH_TIMER 1000/REFRESH_RATE
 
 
 #endif

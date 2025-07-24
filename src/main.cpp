@@ -1,186 +1,231 @@
 #include <setup.h>
 
-class DisplayObject{
-  private:
-  String value="$";
-  String oldValue;
-  bool isWritten;
-  signed char factor_x=0;
-  signed char factor_y=0;
-  unsigned char alignment=0;
-  unsigned char datum;
+class Display
+{
+
+public:
+  class DObj
+  {
+    String value = "$";
+    String oldValue;
+    bool isWritten;
+    signed char factor_x = 0;
+    signed char factor_y = 0;
+    unsigned char datum;
+    const unsigned char max_size = 7;
+    const unsigned char factor2 = 3;
+    unsigned char object_type=0;
+    unsigned char screen_id = 0;
+
   public:
-  unsigned char size = 4;
-  unsigned char font = 1;
-  unsigned short pos_x;
-  unsigned short pos_y;
-  unsigned short length;
-  unsigned short height;
-  unsigned short color=displayRGB(255,255,255);
+    unsigned char size = 4;
+    unsigned char font = 1;
+    unsigned short pos_x;
+    unsigned short pos_y;
+    unsigned short length;
+    unsigned short height;
+    unsigned short color = displayRGB(255, 255, 255);
 
-  void writeCenterText(String value){
-    this->alignment=5;
-    const char * text = this->value.c_str();
-    this->size = min(this->size,max_size);
-    if (this->font==2){
-        this->factor_x= this->size/2;
-        this->factor_y= 0;
+  public:
+    DObj(unsigned char screen,unsigned short x_, unsigned short y_) : screen_id(screen), pos_x(x_), pos_y(y_)
+    {
+      Display::getInstance().registerObject(this);
     }
-    this->datum = MC_DATUM;
-    tft.setTextFont(this->font);
-    tft.setTextDatum(MC_DATUM);
-    tft.setTextColor(this->color, bg_color); // Text color and background
-    tft.setTextSize(this->size); // Scale 1 (default) to 7; doesn't affect all fonts
-    tft.drawString(text,this->pos_x+factor_x,this->pos_y+factor_y); // (text, x, y, font)
-    
-}
 
-void writeTopCenterText(String value){
-    this->alignment=8;
-    const char * text = value.c_str();
-    this->value = value;
-    this->size = min(this->size,max_size);
-    __u8 factor_x = 0;
-    __u8 factor_y = 0;
-    if (this->font==2){
-        factor_x= textsize/2;
-        factor_y=(factor2*textsize)-2;
+    unsigned char getScreen() const {
+      return screen_id;
     }
-    tft.setTextFont(font_style);
-    tft.setTextDatum(TC_DATUM);
-    tft.setTextColor(textcolor, bg_color); // Text color and background
-    tft.setTextSize(textsize); // Scale 1 (default) to 7; doesn't affect all fonts
-    tft.drawString(text,x+factor_x,y-factor_y); // (text, x, y, font)
-}
 
-void writeBottomCenterText(String value){
-    this->alignment=2;
-    const char * text = value.c_str();
-    textsize = min(textsize,max_size);
-    __u8 factor_x = 0;
-    __u8 factor_y = 0;
-    if (font_style==2){
-        factor_x= textsize/2;
-        factor_y=(factor2*textsize)-1;
+    static unsigned short displayRGB(unsigned char r, unsigned char g, unsigned char b)
+    {
+      unsigned short red = (r >> 3) & 0x1F;   // Red: Shift by 3 to fit in 5 bits
+      unsigned short green = (g >> 2) & 0x3F; // Green: Shift by 2 to fit in 6 bits
+      unsigned short blue = (b >> 3) & 0x1F;  // Blue: Shift by 3 to fit in 5 bits
+      return (blue << 11) | (green << 5) | red;
     }
-    tft.setTextFont(font_style);
-    tft.setTextDatum(BC_DATUM);
-    tft.setTextColor(textcolor, bg_color); // Text color and background
-    tft.setTextSize(textsize); // Scale 1 (default) to 7; doesn't affect all fonts
-    tft.drawString(text,x+factor_x,y+factor_y); // (text, x, y, font)
-}
 
-
-void writeLeftText(String value, __u8 textsize,const __u8 font_style, __u16 textcolor, __u16 x, __u16 y){
-    const char * text = value.c_str();
-    textsize = min(textsize,max_size);
-    __u8 factor_x = 0;
-    __u8 factor_y = 0;
-    if (font_style==2){
-        factor_x= 2;
+    static unsigned short displayHEX(const char *hexcode)
+    {
+      if (hexcode[0] == '#')
+        hexcode++;
+      unsigned int rgb = (unsigned int)strtol(hexcode, NULL, 16);
+      return (((rgb >> 19) & 0x1F)) | (((rgb >> 10) & 0x3F) << 5) | (((rgb >> 3) & 0x1F) << 11);
     }
-    tft.setTextFont(font_style);
-    tft.setTextDatum(ML_DATUM);
-    tft.setTextColor(textcolor, bg_color); // Text color and background
-    tft.setTextSize(textsize); // Scale 1 (default) to 7; doesn't affect all fonts
-    tft.drawString(text,x+factor_x,y+factor_y); // (text, x, y, font)
-}
 
-void writeTopLeftText(String value, __u8 textsize,const __u8 font_style, __u16 textcolor, __u16 x, __u16 y){
-    const char * text = value.c_str();
-    textsize = min(textsize,max_size);
-    __u8 factor_x = 0;
-    __u8 factor_y = 0;
-    if (font_style==2){
-        factor_x= 2;
-        factor_y=(factor2*textsize)-2;
+    void writeCenterText(String value)
+    {
+      this->object_type=1;
+      this->value = value;
+      this->size = min(this->size, this->max_size);
+      if (this->font == 2)
+      {
+        this->factor_x = this->size / 2;
+        this->factor_y = 0;
+      }
+      this->datum = MC_DATUM;
     }
-    tft.setTextFont(font_style);
-    tft.setTextDatum(TL_DATUM);
-    tft.setTextColor(textcolor, bg_color); // Text color and background
-    tft.setTextSize(textsize); // Scale 1 (default) to 7; doesn't affect all fonts
-    tft.drawString(text,x+factor_x,y-factor_y); // (text, x, y, font)
-}
 
-void writeBottomLeftText(String value, __u8 textsize,const __u8 font_style, __u16 textcolor, __u16 x, __u16 y){
-    const char * text = value.c_str();
-    textsize = min(textsize,max_size);
-    __u8 factor_x = 0;
-    __u8 factor_y = 0;
-    if (font_style==2){
-        factor_x= 1;
-        factor_y=(factor2*textsize)-1;
+    void writeTopCenterText(String value)
+    {
+      this->object_type=1;
+      this->value = value;
+      this->size = min(this->size, this->max_size);
+      if (this->font == 2)
+      {
+        this->factor_x = this->size / 2;
+        this->factor_y = -((this->factor2 * this->size) - 2);
+      }
+      this->datum = TC_DATUM;
     }
-    tft.setTextFont(font_style);
-    tft.setTextDatum(BL_DATUM);
-    tft.setTextColor(textcolor, bg_color); // Text color and background
-    tft.setTextSize(textsize); // Scale 1 (default) to 7; doesn't affect all fonts
-    tft.drawString(text,x+factor_x,y+factor_y); // (text, x, y, font)
-}
 
-
-void writeRightText(String value, __u8 textsize,const __u8 font_style, __u16 textcolor, __u16 x, __u16 y){
-    const char * text = value.c_str();
-    textsize = min(textsize,max_size);
-    __u8 factor_x = 0;
-    __u8 factor_y = 0;
-    if (font_style==2){
-        factor_x= textsize-1;
+    void writeBottomCenterText(String value)
+    {
+      this->object_type=1;
+      this->value = value;
+      this->size = min(this->size, this->max_size);
+      if (this->font == 2)
+      {
+        this->factor_x = this->size / 2;
+        this->factor_y = (this->factor2 * this->size) - 1;
+      }
+      this->datum = BC_DATUM;
     }
-    tft.setTextFont(font_style);
-    tft.setTextDatum(MR_DATUM);
-    tft.setTextColor(textcolor, bg_color); // Text color and background
-    tft.setTextSize(textsize); // Scale 1 (default) to 7; doesn't affect all fonts
-    tft.drawString(text,x+factor_x,y+factor_y); // (text, x, y, font)
-}
 
-void writeTopRightText(String value, __u8 textsize,const __u8 font_style, __u16 textcolor, __u16 x, __u16 y){
-    const char * text = value.c_str();
-    textsize = min(textsize,max_size);
-    __u8 factor_x = 0;
-    __u8 factor_y = 0;
-    if (font_style==2){
-        factor_x= textsize-1;
-        factor_y=(factor2*textsize)-2;
+    void writeLeftText(String value)
+    {
+      this->object_type=1;
+      this->value = value;
+      this->size = min(this->size, this->max_size);
+      if (this->font == 2)
+      {
+        this->factor_x = 2;
+        this->factor_y = 0;
+      }
+      this->datum = ML_DATUM;
     }
-    tft.setTextFont(font_style);
-    tft.setTextDatum(TR_DATUM);
-    tft.setTextColor(textcolor, bg_color); // Text color and background
-    tft.setTextSize(textsize); // Scale 1 (default) to 7; doesn't affect all fonts
-    tft.drawString(text,x+factor_x,y-factor_y); // (text, x, y, font)
-}
 
-void writeBottomRightText(String value, __u8 textsize,const __u8 font_style, __u16 textcolor, __u16 x, __u16 y){
-    const char * text = value.c_str();
-    textsize = min(textsize,max_size);
-    __s8 factor_x = 0;
-    __s8 factor_y = 0;
-    if (font_style==2){
-        factor_x= textsize-1;
-        factor_y=(factor2*textsize)-1;
+    void writeTopLeftText(String value)
+    {
+      this->object_type=1;
+      this->value = value;
+      this->size = min(this->size, this->max_size);
+      if (this->font == 2)
+      {
+        this->factor_x = 2;
+        this->factor_y = -((this->factor2 * this->size) - 2);
+      }
+      this->datum = TL_DATUM;
     }
-    tft.setTextFont(font_style);
-    tft.setTextDatum(BR_DATUM);
-    tft.setTextColor(textcolor, bg_color); // Text color and background
-    tft.setTextSize(textsize); // Scale 1 (default) to 7; doesn't affect all fonts
-    tft.drawString(text,x+factor_x,y+factor_y); // (text, x, y, font)
-}
 
-  void refreshValue(){
+    void writeBottomLeftText(String value)
+    {
+      this->object_type=1;
+      this->value = value;
+      this->size = min(this->size, this->max_size);
+      if (this->font == 2)
+      {
+        this->factor_x = 1;
+        this->factor_y = (this->factor2 * this->size) - 1;
+      }
+      this->datum = BL_DATUM;
+    }
 
+    void writeRightText(String value)
+    {
+      this->object_type=1;
+      this->value = value;
+      this->size = min(this->size, this->max_size);
+      if (this->font == 2)
+      {
+        this->factor_x = this->size - 1;
+        this->factor_y = 0;
+      }
+      this->datum = MR_DATUM;
+    }
 
-    tft.setTextFont(this->font);
-    tft.setTextDatum(this->datum);
-    tft.setTextColor(bg_color, bg_color); // Text color and background
-    tft.setTextSize(this->size); // Scale 1 (default) to 7; doesn't affect all fonts
-    tft.drawString(this->oldValue.c_str(),this->pos_x+this->factor_x,this->pos_y+this->factor_y); // (text, x, y, font)
+    void writeTopRightText(String value)
+    {
+      this->object_type=1;
+      this->value = value;
+      this->size = min(this->size, this->max_size);
+      if (this->font == 2)
+      {
+        this->factor_x = this->size - 1;
+        this->factor_y = -((this->factor2 * this->size) - 2);
+      }
+      this->datum = TR_DATUM;
+    }
 
+    void writeBottomRightText(String value)
+    {
+      this->object_type=1;
+      this->value = value;
+      this->size = min(this->size, this->max_size);
+      if (this->font == 2)
+      {
+        this->factor_x = this->size - 1;
+        this->factor_y = (this->factor2 * this->size) - 1;
+      }
+      this->datum = BR_DATUM;
+    }
 
-    tft.setTextColor(this->color, bg_color);
-    tft.drawString(this->value.c_str(),this->pos_x+this->factor_x,this->pos_y+this->factor_y); // (text, x, y, font)
-    this->oldValue=this->value;
+    void refresh()
+    {
+      if (this->object_type==1){
+      if (this->value != this->oldValue)
+      {
+        tft.setTextFont(this->font);
+        tft.setTextDatum(this->datum);
+        tft.setTextColor(bg_color, bg_color);                                                               // Text color and background
+        tft.setTextSize(this->size);                                                                        // Scale 1 (default) to 7; doesn't affect all fonts
+        tft.drawString(this->oldValue.c_str(), this->pos_x + this->factor_x, this->pos_y + this->factor_y); // (text, x, y, font)
+        tft.setTextColor(this->color, bg_color);
+        tft.drawString(this->value.c_str(), this->pos_x + this->factor_x, this->pos_y + this->factor_y); // (text, x, y, font)
+        this->oldValue = this->value;
+      }
+    }
+    }
+  };
+
+  void registerObject(DObj *obj)
+  {
+    objects.push_back(obj);
   }
+
+  static Display &getInstance()
+  {
+    static Display instance;
+    return instance;
+  }
+
+  static void refreshAll()
+  {
+    for (auto obj : getInstance().objects)
+    {
+      if (obj->getScreen() == getInstance().getCurrentScreen()) {
+      obj->refresh();
+    }
+    }
+  }
+
+  void setScreen(uint8_t screen) {
+    tft.fillScreen(bg_color);
+    current_screen = screen;
+  }
+
+  uint8_t getCurrentScreen() const {
+    return current_screen;
+  }
+
+private:
+  unsigned char current_screen = 0;
+  std::vector<DObj *> objects;
 };
+
+using DisplayObject = Display::DObj;
+
+
+__u16 bg_color = DisplayObject::displayRGB(14, 3, 51);
 
 char sensorValues[BUFFER_NUMBER][BUFFER_LENGTH][MAX_SENSORS][BUFFER_SIZE];
 uint32_t timeValues[BUFFER_NUMBER][BUFFER_LENGTH];
@@ -198,13 +243,11 @@ Sensor Sensor4;
 Sensor Sensor5;
 Sensor Sensor6;
 
-const __u8 max_size = 7;
-const __u8 factor2 = 3;
 __u8 actual_screen;
 
 TFT_eSPI tft = TFT_eSPI();
 
-__u16 bg_color = displayRGB(14,3,51);
+
 
 String printValues();
 
@@ -220,12 +263,15 @@ void fn_Debug(__u8 data[DEBUG_DLC]);
 
 bool debug_mode = 1;
 
-void setup() {
+void setup()
+{
   Serial.begin(115200);
-  while(!Serial){}
+  while (!Serial)
+  {
+  }
   init_twai();
   disableBluetooth();
-    if (WiFi.status() != WL_CONNECTED)
+  if (WiFi.status() != WL_CONNECTED)
   {
     WiFi.disconnect(true);
     WiFi.mode(WIFI_OFF);
@@ -233,17 +279,15 @@ void setup() {
   sensorLength = indexSetup();
   setSensorName();
 
-  Serial.println("ILI9341 Test!"); 
+  Serial.println("ILI9341 Test!");
   pinMode(TFT_RST, OUTPUT);
   digitalWrite(TFT_RST, HIGH);
 
- 
   tft.init();
   tft.setRotation(0);
- 
 
   tft.fillScreen(bg_color);
-  //actual_screen=screen1(0);
+  // actual_screen=screen1(0);
 
   xTaskCreatePinnedToCore(
       CAN_receiveTask, // Function
@@ -256,51 +300,62 @@ void setup() {
   );
 
   xTaskCreatePinnedToCore(
-      Calibracao,    // Function to implement the task
+      Calibracao,   // Function to implement the task
       "Calibracao", // Name of the task
-      2048,       // Stack size in words
-      NULL,       // Task input parameter
-      1,          // Priority of the task
-      NULL,       // Task handle
-      1           // Core where the task should run (0 or 1)
+      2048,         // Stack size in words
+      NULL,         // Task input parameter
+      1,            // Priority of the task
+      NULL,         // Task handle
+      1             // Core where the task should run (0 or 1)
   );
+
+  xTaskCreatePinnedToCore(
+      refreshRateTask,   // Function to implement the task
+      "Refresh", // Name of the task
+      4096,         // Stack size in words
+      NULL,         // Task input parameter
+      2,            // Priority of the task
+      NULL,         // Task handle
+      1             // Core where the task should run (0 or 1)
+  );
+
 
 }
 
-void loop() {
-  //switchScreen(1,bg_color);
+void loop()
+{
+  // switchScreen(1,bg_color);
 }
 
 void sensorUpdate(float value, uint8_t index)
 {
-  snprintf(sensorValues[buffer_write][row_write][index], 7, "%.2f", value);
+  sensorIndex[index]->value = String(value, 2);
 }
 
 void sensorUpdate(uint8_t value, uint8_t index)
 {
-  snprintf(sensorValues[buffer_write][row_write][index], 7, "%d", value);
+  sensorIndex[index]->value = String(value);
 }
 
 void sensorUpdate(uint16_t value, uint8_t index)
 {
-  snprintf(sensorValues[buffer_write][row_write][index], 7, "%d", value);
+  sensorIndex[index]->value = String(value);
 }
 
 void sensorUpdate(uint32_t value, uint8_t index)
 {
-  snprintf(sensorValues[buffer_write][row_write][index], 7, "%d", value);
+  sensorIndex[index]->value = String(value);
 }
 
 void sensorUpdate(uint64_t value, uint8_t index)
 {
-  snprintf(sensorValues[buffer_write][row_write][index], 7, "%llu", value);
+  sensorIndex[index]->value = String((uint64_t)value);
 }
 
 void sensorUpdate(String value, uint8_t index)
 {
-  value.toCharArray(sensorValues[buffer_write][row_write][index], 7);
+  sensorIndex[index]->value = value;
 }
-
 
 void CAN_receiveTask(void *parameter)
 {
@@ -479,14 +534,16 @@ void fn_Data_09(__u8 data[DATA_09_DLC])
 {
 }
 
-void fn_RPM(__u8 data[RPM_DLC]){
+void fn_RPM(__u8 data[RPM_DLC])
+{
   uint16_t RPM = ((data[1] & 0x3F) << 8) | data[0];
-  sensorUpdate(RPM,RPM_Sensor.index);
-} 
+  sensorUpdate(RPM, RPM_Sensor.index);
+}
 
 void fn_Buffer_Ack(__u8 data[BUFFER_ACK_DLC])
 {
-  if (data[0]=='1'){
+  if (data[0] == '1')
+  {
     timeValues[buffer_write][row_write] = (xTaskGetTickCount() * 1000) / configTICK_RATE_HZ;
     row_write++;
     if (row_write >= BUFFER_LENGTH)
@@ -495,7 +552,6 @@ void fn_Buffer_Ack(__u8 data[BUFFER_ACK_DLC])
       row_write = 0;
     }
   }
-
 }
 
 void fn_Debug(__u8 data[DEBUG_DLC])
@@ -569,233 +625,125 @@ void Calibracao(void *parameter)
   const TickType_t xFrequency = pdMS_TO_TICKS(CALIBRACAO_TIMER);
   for (;;)
   {
-    debugScreen(0);
+    debugScreen();
     vTaskDelayUntil(&xLastWakeTime, xFrequency);
   }
 }
 
-void
- switchScreen(bool direction, __u16 bg_color){
-    switch (actual_screen){
-        case 1:
-            screen1(1);
-            break;
-        case 2:
-            screen2(1);
-            break;
-        case 3:
-            screen3(1);
-            break;
-    };
-
-    if (direction){
-        actual_screen++;
-        if (actual_screen==4){
-            actual_screen=1;
-        }
-    }
-    else{
-        actual_screen--;
-        if (actual_screen==0){
-            actual_screen=3;
-        }
-    }
-
-    switch (actual_screen){
-        case 0:
-            debugScreen(0);
-            break;
-        case 1:
-            screen1(0);
-            break;
-        case 2:
-            screen2(0);
-            break;
-        case 3:
-            screen3(0);
-            break;
-    };
-
-
+void refreshRateTask(void *parameter)
+{
+    TickType_t xLastWakeTime = xTaskGetTickCount();
+  const TickType_t xFrequency = pdMS_TO_TICKS(REFRESH_TIMER);
+  for (;;)
+  {
+    Display::refreshAll();
+    vTaskDelayUntil(&xLastWakeTime, xFrequency);
+  }
 }
 
+void switchScreen(bool direction, __u16 bg_color)
+{
+  switch (actual_screen)
+  {
+  case 1:
+    screen1();
+    break;
+  case 2:
+    screen2();
+    break;
+  case 3:
+    screen3();
+    break;
+  };
 
+  if (direction)
+  {
+    actual_screen++;
+    if (actual_screen == 4)
+    {
+      actual_screen = 1;
+    }
+  }
+  else
+  {
+    actual_screen--;
+    if (actual_screen == 0)
+    {
+      actual_screen = 3;
+    }
+  }
 
-
-
-
-
+  switch (actual_screen)
+  {
+  case 0:
+    debugScreen();
+    break;
+  case 1:
+    screen1();
+    break;
+  case 2:
+    screen2();
+    break;
+  case 3:
+    screen3();
+    break;
+  };
+}
 
 // WRITE FUNCTIONS
 
-__u16 displayRGB(__u8 r, __u8 g, __u8 b){
-    __u16 red = (r >> 3) & 0x1F;   // Red: Shift by 3 to fit in 5 bits
-    __u16 green = (g >> 2) & 0x3F; // Green: Shift by 2 to fit in 6 bits
-    __u16 blue = (b >> 3) & 0x1F;  // Blue: Shift by 3 to fit in 5 bits
-    return (blue << 11) | (green << 5) | red;
+   __u8 screen1()
+{
+  static DisplayObject text1(1,tft.width() / 2,220);
+  text1.writeBottomCenterText("12000");
+  static DisplayObject text2(1,tft.width() / 2,tft.height());
+  text2.writeBottomCenterText("RPM");
+  return 1;
 }
 
-__u16 displayHEX(const char* hexcode) {
-    if (hexcode[0] == '#') hexcode++;
-    __u32 rgb = (uint32_t)strtol(hexcode, NULL, 16);
-    return (((rgb >> 19) & 0x1F)) |(((rgb >> 10) & 0x3F) << 5)|(((rgb >> 3)  & 0x1F) << 11);
+__u8 screen2()
+{
+  static DisplayObject text2(2,tft.width() / 2,220);
+  text2.writeBottomCenterText("Test 2");
+
+  return 2;
+}
+__u8 screen3()
+{
+  static DisplayObject text3(3,tft.width() / 2,220);
+  text3.writeBottomCenterText("AAAAA");
+
+  return 3;
 }
 
-
-
-
-__u8 screen1(bool clear){
-
-    const char* text1 = "12000";
-    __u8 size_1 = 7;
-    __u8 font_1 = 1;
-    __u16 pos_x_1 = tft.width()/2;
-    __u16 pos_y_1 = 220;
-    __u16 color_1 = displayRGB(255,255,255);
-
-    const char* text2 = "RPM";
-    __u8 size_2 = 2;
-    __u8 font_2 = 1;
-    __u16 pos_x_2 = tft.width()/2;
-    __u16 pos_y_2 = tft.height();
-    __u16 color_2 = displayRGB(255,255,255);
-
-    if (!clear){
-        writeBottomCenterText(text1,size_1,font_1,color_1,pos_x_1,pos_y_1);
-        writeBottomCenterText(text2,size_2,font_2,color_2,pos_x_2,pos_y_2);
-    }
-    else{
-        writeBottomCenterText(text1,size_1,font_1,bg_color,pos_x_1,pos_y_1);
-        writeBottomCenterText(text2,size_2,font_2,bg_color,pos_x_2,pos_y_2);
-    }
-    return 1;
-}
-
-__u8 screen2(bool clear){
-    
-    const char* text1 = "Test 2";
-    __u8 size_1 = 7;
-    __u8 font_1 = 1;
-    __u16 pos_x_1 = tft.width()/2;
-    __u16 pos_y_1 = 220;
-    __u16 color_1 = displayRGB(255,255,255);
- 
-    if (!clear){
-        writeBottomCenterText(text1,size_1,font_1,color_1,pos_x_1,pos_y_1);
-    }
-    else{
-        writeBottomCenterText(text1,size_1,font_1,bg_color,pos_x_1,pos_y_1);
-    }
- 
-
-return 2;
-}
-__u8 screen3(bool clear){
-
-    const char* text1 = "AAAAA";
-    __u8 size_1 = 7;
-    __u8 font_1 = 1;
-    __u16 pos_x_1 = tft.width()/2;
-    __u16 pos_y_1 = 220;
-    __u16 color_1 = displayRGB(255,255,255);
- 
-    if (!clear){
-        writeBottomCenterText(text1,size_1,font_1,color_1,pos_x_1,pos_y_1);
-    }
-    else{
-        writeBottomCenterText(text1,size_1,font_1,bg_color,pos_x_1,pos_y_1);
-    }
-
-return 3;
-}
-
-__u8 debugScreen(bool clear){
-
-    __u8 size_1 = 4;
-    __u8 font_1 = 1;
-
-    __u16 pos_x_1 = 0;
-    __u16 pos_y_1 = 0;
-
-    __u16 pos_x_2 = tft.width();
-    __u16 pos_y_2 = 0;
-
-    __u16 pos_x_3 = 0;
-    __u16 pos_y_3 = tft.height();
-
-    __u16 pos_x_4 = tft.width();
-    __u16 pos_y_4 = tft.height();
-
-    __u16 pos_x_5 = tft.width()/2;
-    __u16 pos_y_5 = tft.height()/2;
-
-
-
-
-    __u16 color_1 = displayRGB(255,255,255);
-
-    if (Sensor1.oldValue!="$"){
-    writeTopLeftText(Sensor1.oldValue,size_1,font_1,bg_color,pos_x_1,pos_y_1);
-    }
-    if (Sensor2.oldValue!="$"){
-    writeTopRightText(Sensor2.oldValue,size_1,font_1,bg_color,pos_x_2,pos_y_2);
-    }
-    if (Sensor3.oldValue!="$"){
-    writeBottomLeftText(Sensor3.oldValue,size_1,font_1,bg_color,pos_x_3,pos_y_3);
-    }
-    if (Sensor4.oldValue!="$"){
-    writeBottomRightText(Sensor4.oldValue,size_1,font_1,bg_color,pos_x_4,pos_y_4);
-    }
-
-    if (Sensor5.oldValue!="$"){
-    writeBottomRightText(Sensor5.oldValue,size_1,font_1,bg_color,pos_x_5,pos_y_5);
-    }
-
-    Sensor1 = Wheel_Spd_FR_Sensor;
-    Sensor2 = Wheel_Spd_FL_Sensor;
-    Sensor3 = Wheel_Spd_RR_Sensor;
-    Sensor4 = Wheel_Spd_RL_Sensor;
-    Sensor5 = RPM_Sensor; 
-    bool print =0;
-    uint8_t time=0;
-    if (row_write==0){
-      while(row_write==0&&time<5){
-        vTaskDelay(pdMS_TO_TICKS(1));
-        time++;
-      }
-    }
-    if (row_write!=0){
-      print =1;
-    }
-    if (print){
-      char *value1 = sensorValues[buffer_write][row_write-1][Sensor1.index];
-      char *value2 = sensorValues[buffer_write][row_write-1][Sensor2.index];
-      char *value3 = sensorValues[buffer_write][row_write-1][Sensor3.index];
-      char *value4 = sensorValues[buffer_write][row_write-1][Sensor4.index];
-      char *value5 = sensorValues[buffer_write][row_write-1][Sensor5.index];
-
-      if (value1[0]!='\0'){
-        Sensor1.oldValue = value1;
-      }
-      if (value2[0]!='\0'){
-        Sensor2.oldValue = value2;
-      }
-      if (value3[0]!='\0'){
-        Sensor3.oldValue = value3;
-      }
-      if (value4[0]!='\0'){
-        Sensor4.oldValue = value4;
-      }
-      if (value5[0]!='\0'){
-        Sensor5.oldValue = value5;
-      }
-        writeTopLeftText(Sensor1.oldValue,size_1,font_1,color_1,pos_x_1,pos_y_1);
-        writeTopRightText(Sensor2.oldValue,size_1,font_1,color_1,pos_x_2,pos_y_2);
-        writeBottomLeftText(Sensor3.oldValue,size_1,font_1,color_1,pos_x_3,pos_y_3);
-        writeBottomRightText(Sensor4.oldValue,size_1,font_1,color_1,pos_x_4,pos_y_4);
-        writeCenterText(Sensor5.oldValue,size_1,font_1,color_1,pos_x_5,pos_y_5);
-
+void displaySetScreen(uint8_t id){
+  if (Display::getInstance().getCurrentScreen()!=id){
+  Display::getInstance().setScreen(id);
   }
+}
 
-return 0;
+__u8 debugScreen()
+{
+  displaySetScreen(4);
+  static DisplayObject text1(4,0,0);
+  static DisplayObject text2(4,tft.width(),0);
+  static DisplayObject text3(4,0,tft.height());
+  static DisplayObject text4(4,tft.width(),tft.height());
+  static DisplayObject text5(4,tft.width() / 2,tft.height() / 2);
+
+  text1.writeTopLeftText(Susp_Pos_FL_Sensor.value);
+  text2.writeTopRightText(Susp_Pos_FR_Sensor.value);
+  text3.writeBottomLeftText(Susp_Pos_RL_Sensor.value);
+  text4.writeBottomRightText(Susp_Pos_RR_Sensor.value);
+  text5.writeCenterText(RPM_Sensor.value);
+
+
+
+    /*writeTopLeftText(Sensor1.oldValue, size_1, font_1, color_1, pos_x_1, pos_y_1);
+    writeTopRightText(Sensor2.oldValue, size_1, font_1, color_1, pos_x_2, pos_y_2);
+    writeBottomLeftText(Sensor3.oldValue, size_1, font_1, color_1, pos_x_3, pos_y_3);
+    writeBottomRightText(Sensor4.oldValue, size_1, font_1, color_1, pos_x_4, pos_y_4);
+    writeCenterText(Sensor5.oldValue, size_1, font_1, color_1, pos_x_5, pos_y_5);*/
+
+  return 0;
 }

@@ -352,6 +352,26 @@ void sensorUpdate(uint64_t value, uint8_t index)
   sensorIndex[index]->value = String((uint64_t)value);
 }
 
+void sensorUpdate(int8_t value, uint8_t index)
+{
+  sensorIndex[index]->value = String(value);
+}
+
+void sensorUpdate(int16_t value, uint8_t index)
+{
+  sensorIndex[index]->value = String(value);
+}
+
+void sensorUpdate(int32_t value, uint8_t index)
+{
+  sensorIndex[index]->value = String(value);
+}
+
+void sensorUpdate(int64_t value, uint8_t index)
+{
+  sensorIndex[index]->value = String((int64_t)value);
+}
+
 void sensorUpdate(String value, uint8_t index)
 {
   sensorIndex[index]->value = value;
@@ -430,6 +450,14 @@ void CAN_setSensor(const __u8 *canData, __u8 canPacketSize, __u32 canId)
 
   case RPM_ID:
     fn_RPM(data);
+    break;
+
+  case ACC_ID:
+    fn_ACC(data);
+    break;
+
+  case GYRO_ID:
+    fn_GYRO(data);
     break;
 
   default:
@@ -538,6 +566,26 @@ void fn_RPM(__u8 data[RPM_DLC])
 {
   uint16_t RPM = ((data[1] & 0x3F) << 8) | data[0];
   sensorUpdate(RPM, RPM_Sensor.index);
+}
+
+void fn_ACC(__u8 data[ACC_DLC])
+{
+  int16_t AccX = (int16_t)(data[1] << 8 | data[0]);
+  int16_t AccY = (int16_t)(data[3] << 8 | data[2]);
+  int16_t AccZ = (int16_t)(data[5] << 8 | data[4]);
+  sensorUpdate(AccX, Accel_X.index);
+  sensorUpdate(AccY, Accel_Y.index);
+  sensorUpdate(AccZ, Accel_Z.index);
+}
+
+void fn_GYRO(__u8 data[GYRO_DLC])
+{
+  int16_t GyX = (int16_t)(data[1] << 8 | data[0]);
+  int16_t GyY = (int16_t)(data[3] << 8 | data[2]);
+  int16_t GyZ = (int16_t)(data[5] << 8 | data[4]);
+  sensorUpdate(GyX, Gyro_X.index);
+  sensorUpdate(GyY, Gyro_Y.index);
+  sensorUpdate(GyZ, Gyro_Z.index);
 }
 
 void fn_Buffer_Ack(__u8 data[BUFFER_ACK_DLC])
@@ -725,25 +773,22 @@ void displaySetScreen(uint8_t id){
 __u8 debugScreen()
 {
   displaySetScreen(4);
-  static DisplayObject text1(4,0,0);
-  static DisplayObject text2(4,tft.width(),0);
-  static DisplayObject text3(4,0,tft.height());
-  static DisplayObject text4(4,tft.width(),tft.height());
-  static DisplayObject text5(4,tft.width() / 2,tft.height() / 2);
+  static DisplayObject AccX(4,0,0);
+  static DisplayObject AccY(4,tft.width()/2,0);
+  static DisplayObject AccZ(4,tft.width(),0);
+  static DisplayObject GyroX(4,0,tft.height());
+  static DisplayObject GyroY(4,tft.width()/2,tft.height());
+  static DisplayObject GyroZ(4,tft.width(),tft.height());
+  static DisplayObject RPM(4,tft.width() / 2,tft.height() / 2);
 
-  text1.writeTopLeftText(Susp_Pos_FL_Sensor.value);
-  text2.writeTopRightText(Susp_Pos_FR_Sensor.value);
-  text3.writeBottomLeftText(Susp_Pos_RL_Sensor.value);
-  text4.writeBottomRightText(Susp_Pos_RR_Sensor.value);
-  text5.writeCenterText(RPM_Sensor.value);
+  AccX.writeTopLeftText(Accel_X.value);
+  AccY.writeTopCenterText(Accel_Y.value);
+  AccZ.writeTopRightText(Accel_Z.value);
+  GyroX.writeBottomLeftText(Gyro_X.value);
+  GyroY.writeBottomCenterText(Gyro_Y.value);
+  GyroZ.writeBottomRightText(Gyro_Z.value);
+  RPM.writeCenterText(RPM_Sensor.value);
 
-
-
-    /*writeTopLeftText(Sensor1.oldValue, size_1, font_1, color_1, pos_x_1, pos_y_1);
-    writeTopRightText(Sensor2.oldValue, size_1, font_1, color_1, pos_x_2, pos_y_2);
-    writeBottomLeftText(Sensor3.oldValue, size_1, font_1, color_1, pos_x_3, pos_y_3);
-    writeBottomRightText(Sensor4.oldValue, size_1, font_1, color_1, pos_x_4, pos_y_4);
-    writeCenterText(Sensor5.oldValue, size_1, font_1, color_1, pos_x_5, pos_y_5);*/
 
   return 0;
 }

@@ -65,6 +65,8 @@ void fn_Data_08(__u8 data[DATA_08_DLC]);
 void fn_Data_09(__u8 data[DATA_09_DLC]);
 void fn_Buffer_Ack(__u8 data[BUFFER_ACK_DLC]);
 void fn_RPM(__u8 data[RPM_DLC]);
+void fn_ACC(__u8 data[ACC_DLC]);
+void fn_GYRO(__u8 data[GYRO_DLC]);
 void fn_Debug(__u8 data[DEBUG_DLC]);
 
 void init_twai();
@@ -85,7 +87,7 @@ void sensorUpdate(T value, __u8 index);
 #define TIMEBASE 100
 #define BUFFER_LENGTH TIMEBASE/SD_TASK_TIMER
 #define BUFFER_NUMBER 2
-#define MAX_SENSORS 42
+#define MAX_SENSORS 55
 #define BUFFER_SIZE 7
 
 #define REFRESH_RATE 30

@@ -37,13 +37,14 @@ extern __u16 bg_color;
 
 extern __u8 actual_screen;
 
-void switchScreen(bool direction, __u16 bg_color);
-__u8 screen1();
-__u8 screen2();
-__u8 screen3();
-__u8 debugScreen();
+void mainScreen();
+void screen2();
+void screen3();
+void debugScreen();
+void setupScreen();
 
 void Calibracao(void *parameter);
+void ScreenManager(void *parameter);
 void refreshRateTask(void *parameter);
 void CAN_receiveTask(void *parameter);
 void disableBluetooth();
@@ -52,6 +53,7 @@ void displaySetScreen(uint8_t id);
 
 void CAN_setSensor(const __u8 *canData, __u8 canPacketSize,__u32 canId);
 
+bool checkButton(uint8_t pin);
 
 void fn_Messages(__u8 data[MESSAGES_DLC]);
 void fn_Data_01(__u8 data[DATA_01_DLC]);
@@ -90,8 +92,29 @@ void sensorUpdate(T value, __u8 index);
 #define MAX_SENSORS 55
 #define BUFFER_SIZE 7
 
+#define BTN_RETURN GPIO_NUM_36
+#define BTN_LEFT GPIO_NUM_39
+#define BTN_RIGHT GPIO_NUM_34
+#define BTN_SELECT GPIO_NUM_35
+
 #define REFRESH_RATE 30
 #define REFRESH_TIMER 1000/REFRESH_RATE
+
+const uint8_t mainScreen_ID = 1;
+const uint8_t screen2_ID = 2;
+const uint8_t screen3_ID = 3;
+
+const uint8_t screens[]={
+    mainScreen_ID,
+    screen2_ID,
+    screen3_ID
+};
+
+
+const uint8_t setupScreen_ID = 10;
+const uint8_t debugScreen_ID = 255;
+
+const uint8_t font_size_const = 4;
 
 
 #endif

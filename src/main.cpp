@@ -1,9 +1,11 @@
 #include <setup.h>
 
+bool debug_mode = 0;
+
 class Display
 {
-
 public:
+  bool first_update = true;
   class DObj
   {
     String value = "$";
@@ -16,6 +18,10 @@ public:
     const unsigned char factor2 = 3;
     unsigned char object_type=0;
     unsigned char screen_id = 0;
+    unsigned short x_length=0;
+    unsigned short y_length=0;
+    unsigned short x_old_length=0;
+    unsigned short y_old_length=0;
 
   public:
     unsigned char size = 4;
@@ -27,7 +33,7 @@ public:
     unsigned short color = displayRGB(255, 255, 255);
 
   public:
-    DObj(unsigned char screen,unsigned short x_, unsigned short y_) : screen_id(screen), pos_x(x_), pos_y(y_)
+    DObj(unsigned short x_, unsigned short y_) : screen_id(Display::getInstance().getCurrentScreen()),pos_x(x_), pos_y(y_)
     {
       Display::getInstance().registerObject(this);
     }
@@ -169,10 +175,22 @@ public:
       this->datum = BR_DATUM;
     }
 
+    void drawXline(unsigned short length)
+    {
+      this->object_type=2;
+      this->x_length = length;
+    }
+
+    void drawYline(unsigned short length)
+    {
+      this->object_type=3;
+      this->y_length = length;
+    }
+
     void refresh()
     {
       if (this->object_type==1){
-      if (this->value != this->oldValue)
+      if (this->value != this->oldValue||Display::getInstance().first_update==true)
       {
         tft.setTextFont(this->font);
         tft.setTextDatum(this->datum);
@@ -184,7 +202,18 @@ public:
         this->oldValue = this->value;
       }
     }
+    else if(this->object_type==2){
+      if (this->x_length!=this->x_old_length||Display::getInstance().first_update==true){
+        tft.drawFastHLine(this->pos_x, this->pos_y, this->x_length, this->color);
+      }
     }
+    else if(this->object_type==3){
+      if (this->y_length!=this->y_old_length||Display::getInstance().first_update==true){
+        tft.drawFastVLine(this->pos_x, this->pos_y, this->y_length, this->color);
+      }
+    }
+  }
+    
   };
 
   void registerObject(DObj *obj)
@@ -206,11 +235,15 @@ public:
       obj->refresh();
     }
     }
+    if (getInstance().first_update==true){
+    getInstance().first_update=false;
+    }
   }
 
   void setScreen(uint8_t screen) {
     tft.fillScreen(bg_color);
     current_screen = screen;
+    getInstance().first_update=true;
   }
 
   uint8_t getCurrentScreen() const {
@@ -261,7 +294,7 @@ QueueHandle_t can_rx_queue;
 
 void fn_Debug(__u8 data[DEBUG_DLC]);
 
-bool debug_mode = 1;
+
 
 void setup()
 {
@@ -271,6 +304,11 @@ void setup()
   }
   init_twai();
   disableBluetooth();
+  pinMode(BTN_LEFT,INPUT);
+  pinMode(BTN_RIGHT,INPUT);
+  pinMode(BTN_RETURN,INPUT);
+  pinMode(BTN_SELECT,INPUT);
+
   if (WiFi.status() != WL_CONNECTED)
   {
     WiFi.disconnect(true);
@@ -287,7 +325,6 @@ void setup()
   tft.setRotation(0);
 
   tft.fillScreen(bg_color);
-  // actual_screen=screen1(0);
 
   xTaskCreatePinnedToCore(
       CAN_receiveTask, // Function
@@ -310,6 +347,16 @@ void setup()
   );
 
   xTaskCreatePinnedToCore(
+      ScreenManager,   // Function to implement the task
+      "Screen Manager", // Name of the task
+      2048,         // Stack size in words
+      NULL,         // Task input parameter
+      1,            // Priority of the task
+      NULL,         // Task handle
+      1             // Core where the task should run (0 or 1)
+  );
+
+  xTaskCreatePinnedToCore(
       refreshRateTask,   // Function to implement the task
       "Refresh", // Name of the task
       4096,         // Stack size in words
@@ -319,7 +366,9 @@ void setup()
       1             // Core where the task should run (0 or 1)
   );
 
-
+  if (!debug_mode){
+    displaySetScreen(mainScreen_ID);
+  }
 }
 
 void loop()
@@ -573,9 +622,16 @@ void fn_ACC(__u8 data[ACC_DLC])
   int16_t AccX = (int16_t)(data[1] << 8 | data[0]);
   int16_t AccY = (int16_t)(data[3] << 8 | data[2]);
   int16_t AccZ = (int16_t)(data[5] << 8 | data[4]);
-  sensorUpdate(AccX, Accel_X.index);
-  sensorUpdate(AccY, Accel_Y.index);
-  sensorUpdate(AccZ, Accel_Z.index);
+  int16_t AccMod = (int16_t)(data[7] << 8 | data[6]);
+
+  float aX = (float)AccX/16384;
+  float aY = (float)AccY/16384;
+  float aZ = (float)AccZ/16384;
+  float aMod = (float)AccMod/16384;
+  sensorUpdate(aX, Accel_X.index);
+  sensorUpdate(aY, Accel_Y.index);
+  sensorUpdate(aZ, Accel_Z.index);
+  sensorUpdate(aMod, Accel.index);
 }
 
 void fn_GYRO(__u8 data[GYRO_DLC])
@@ -583,9 +639,24 @@ void fn_GYRO(__u8 data[GYRO_DLC])
   int16_t GyX = (int16_t)(data[1] << 8 | data[0]);
   int16_t GyY = (int16_t)(data[3] << 8 | data[2]);
   int16_t GyZ = (int16_t)(data[5] << 8 | data[4]);
-  sensorUpdate(GyX, Gyro_X.index);
-  sensorUpdate(GyY, Gyro_Y.index);
-  sensorUpdate(GyZ, Gyro_Z.index);
+
+    float roll_rate = 1.3;
+    float pitch_rate = -3.25;
+    float yaw_rate = -1.12;
+    float RateRoll,RatePitch,RateYaw;
+
+
+    RateRoll=(float)GyX/65.5;
+    RatePitch=(float)GyY/65.5;
+    RateYaw=(float)GyZ/65.5;
+
+    RateRoll-=roll_rate;
+    RatePitch-=pitch_rate;
+    RateYaw-=yaw_rate;
+
+    sensorUpdate(RateRoll, Gyro_X.index);
+    sensorUpdate(RatePitch, Gyro_Y.index);
+    sensorUpdate(RateYaw, Gyro_Z.index);
 }
 
 void fn_Buffer_Ack(__u8 data[BUFFER_ACK_DLC])
@@ -673,9 +744,91 @@ void Calibracao(void *parameter)
   const TickType_t xFrequency = pdMS_TO_TICKS(CALIBRACAO_TIMER);
   for (;;)
   {
-    debugScreen();
+    if (debug_mode){
+      debugScreen();
+    }
     vTaskDelayUntil(&xLastWakeTime, xFrequency);
   }
+}
+
+void ScreenManager(void *parameter){
+  TickType_t xLastWakeTime = xTaskGetTickCount();
+  const TickType_t xFrequency = pdMS_TO_TICKS(REFRESH_TIMER);
+  static uint8_t screen_selector;
+  static bool setup_mode = false;
+  static const uint8_t num_screens = sizeof(screens) / sizeof(screens[0]);
+  static bool pressed1=false;
+  static bool pressed2=false;
+  static bool pressed3=false;
+  static bool pressed4=false;
+  static uint8_t current_index=0;
+  for (;;)
+  {
+
+
+    if (!debug_mode){
+
+          screen_selector = Display::getInstance().getCurrentScreen();
+    bool state1 = checkButton(BTN_RIGHT);
+    bool state2 = checkButton(BTN_LEFT);
+    bool state3 = checkButton(BTN_RETURN);
+    bool state4 = checkButton(BTN_SELECT);
+
+    if ((state1 && !pressed1) && (state2&& !pressed2)) {
+      if (!setup_mode) {
+        setup_mode = true;
+        pressed1=true;
+        pressed2=true;
+        
+      }
+    }
+
+    if (state1 && !pressed1) {
+      current_index = (current_index + 1) % num_screens;
+      screen_selector=screens[current_index];
+      pressed1=true;
+    }
+    else if(!state1 && pressed1){
+      pressed1=false;
+    }
+
+    if (state2 && !pressed2) {
+      if (current_index == 0) {
+        current_index = num_screens - 1;
+      } else {
+        current_index--;
+      }
+      screen_selector=screens[current_index];
+      pressed2=true;
+    }
+    else if(!state2 && pressed2){
+      pressed2=false;
+    }
+    if (setup_mode){
+      setupScreen();
+    }
+
+    else{
+      switch(screen_selector){
+        case mainScreen_ID:
+          mainScreen();
+          break;
+        case screen2_ID:
+          screen2();
+          break;
+        case screen3_ID:
+          screen3();
+          break;
+      };
+    }
+    }
+    vTaskDelayUntil(&xLastWakeTime, xFrequency);
+  }
+
+}
+
+bool checkButton(uint8_t pin) {
+  return digitalRead(pin) == HIGH;
 }
 
 void refreshRateTask(void *parameter)
@@ -689,79 +842,48 @@ void refreshRateTask(void *parameter)
   }
 }
 
-void switchScreen(bool direction, __u16 bg_color)
-{
-  switch (actual_screen)
-  {
-  case 1:
-    screen1();
-    break;
-  case 2:
-    screen2();
-    break;
-  case 3:
-    screen3();
-    break;
-  };
-
-  if (direction)
-  {
-    actual_screen++;
-    if (actual_screen == 4)
-    {
-      actual_screen = 1;
-    }
-  }
-  else
-  {
-    actual_screen--;
-    if (actual_screen == 0)
-    {
-      actual_screen = 3;
-    }
-  }
-
-  switch (actual_screen)
-  {
-  case 0:
-    debugScreen();
-    break;
-  case 1:
-    screen1();
-    break;
-  case 2:
-    screen2();
-    break;
-  case 3:
-    screen3();
-    break;
-  };
-}
 
 // WRITE FUNCTIONS
 
-   __u8 screen1()
+   void mainScreen()
 {
-  static DisplayObject text1(1,tft.width() / 2,220);
-  text1.writeBottomCenterText("12000");
-  static DisplayObject text2(1,tft.width() / 2,tft.height());
-  text2.writeBottomCenterText("RPM");
-  return 1;
+  displaySetScreen(mainScreen_ID);
+
+  static DisplayObject Gear(tft.width() / 2,tft.height() / 2);
+  Gear.size=7;
+  Gear.writeCenterText(Gear_Pos_Sens.value);
+
+  static DisplayObject Gear_Text(tft.width() / 2,(tft.height() / 2)+(Gear.size*font_size_const)+1);
+  Gear_Text.size=2;
+  Gear_Text.writeTopCenterText("GEAR");
+
+  static DisplayObject RPM(0,0);
+  RPM.writeTopLeftText(RPM_Sensor.value);
+
+  static DisplayObject RPM_Text(0,(RPM.size*2*font_size_const)+1);
+  RPM_Text.size=2;
+  RPM_Text.writeTopLeftText("RPM");
+
+  static DisplayObject Line1(0,60);
+  Line1.drawXline(tft.width());
+
+  static DisplayObject Line2(0,tft.height()-60);
+  Line2.drawXline(tft.width());
+
 }
 
-__u8 screen2()
+void screen2()
 {
-  static DisplayObject text2(2,tft.width() / 2,220);
+  displaySetScreen(screen2_ID);
+  static DisplayObject text2(tft.width() / 2,220);
   text2.writeBottomCenterText("Test 2");
 
-  return 2;
 }
-__u8 screen3()
+void screen3()
 {
-  static DisplayObject text3(3,tft.width() / 2,220);
+  displaySetScreen(screen3_ID);
+  static DisplayObject text3(tft.width() / 2,220);
   text3.writeBottomCenterText("AAAAA");
-
-  return 3;
 }
 
 void displaySetScreen(uint8_t id){
@@ -770,16 +892,24 @@ void displaySetScreen(uint8_t id){
   }
 }
 
-__u8 debugScreen()
+void debugScreen()
 {
-  displaySetScreen(4);
-  static DisplayObject AccX(4,0,0);
-  static DisplayObject AccY(4,tft.width()/2,0);
-  static DisplayObject AccZ(4,tft.width(),0);
-  static DisplayObject GyroX(4,0,tft.height());
-  static DisplayObject GyroY(4,tft.width()/2,tft.height());
-  static DisplayObject GyroZ(4,tft.width(),tft.height());
-  static DisplayObject RPM(4,tft.width() / 2,tft.height() / 2);
+  
+  displaySetScreen(debugScreen_ID);
+  static DisplayObject AccX(0,0);
+  static DisplayObject AccY(tft.width()/2,0);
+  static DisplayObject AccZ(tft.width(),0);
+  static DisplayObject GyroX(0,tft.height());
+  static DisplayObject GyroY(tft.width()/2,tft.height());
+  static DisplayObject GyroZ(tft.width(),tft.height());
+  static DisplayObject Amod(tft.width() / 2,tft.height() / 2);
+
+  AccX.size = 3;
+  AccY.size = 3;
+  AccZ.size = 3;
+  GyroX.size = 3;
+  GyroY.size = 3;
+  GyroZ.size = 3;
 
   AccX.writeTopLeftText(Accel_X.value);
   AccY.writeTopCenterText(Accel_Y.value);
@@ -787,8 +917,11 @@ __u8 debugScreen()
   GyroX.writeBottomLeftText(Gyro_X.value);
   GyroY.writeBottomCenterText(Gyro_Y.value);
   GyroZ.writeBottomRightText(Gyro_Z.value);
-  RPM.writeCenterText(RPM_Sensor.value);
+  Amod.writeCenterText(Accel.value);
+}
 
 
-  return 0;
+void setupScreen(){
+
+
 }

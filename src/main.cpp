@@ -280,7 +280,7 @@ __u8 actual_screen;
 
 TFT_eSPI tft = TFT_eSPI();
 
-
+bool timeSet = false;
 
 String printValues();
 
@@ -508,6 +508,9 @@ void CAN_setSensor(const __u8 *canData, __u8 canPacketSize, __u32 canId)
   case GYRO_ID:
     fn_GYRO(data);
     break;
+  case TIMESET_ID:
+    fn_timeSet(data);
+    break;
 
   default:
     Serial.print("ID: ");
@@ -657,6 +660,36 @@ void fn_GYRO(__u8 data[GYRO_DLC])
     sensorUpdate(RateRoll, Gyro_X.index);
     sensorUpdate(RatePitch, Gyro_Y.index);
     sensorUpdate(RateYaw, Gyro_Z.index);
+}
+
+void fn_timeSet(__u8 data[TIMESET_DLC]){
+      uint8_t day    =  data[0] & 0x1F;       
+      uint8_t month  = (data[0] >> 5) & 0x07;         
+      month |= (data[1] & 0x01) << 3;                 
+
+      uint16_t year  = (data[1] >> 1) & 0x7F;          
+      year |= ((data[2] & 0x1F) << 7);                  
+
+      uint8_t hour   = (data[2] >> 5) & 0x07;           
+      hour |= (data[3] & 0x03) << 3;                    
+
+      uint8_t minute = (data[3] >> 2) & 0x3F;           
+      uint8_t second =  data[4] & 0x3F; 
+
+      struct tm t;
+      t.tm_year = year - 1900;
+      t.tm_mon = month - 1;
+      t.tm_mday = day;
+      t.tm_hour = hour;
+      t.tm_min = minute;
+      t.tm_sec = second;
+      t.tm_isdst = 0;
+      time_t timeSinceEpoch = mktime(&t);
+      struct timeval tv = {.tv_sec = timeSinceEpoch, .tv_usec = 0};
+      settimeofday(&tv, nullptr);
+      uint8_t ack[TIMESET_ACK_DLC]={1};
+      timeSet=true;
+      sendCANMessage(TIMESET_ACK_ID,ack,TIMESET_ACK_DLC);
 }
 
 void fn_Buffer_Ack(__u8 data[BUFFER_ACK_DLC])
@@ -864,6 +897,10 @@ void refreshRateTask(void *parameter)
   RPM_Text.size=2;
   RPM_Text.writeTopLeftText("RPM");
 
+  static DisplayObject TimeHMS(tft.width(),0);
+  TimeHMS.size=3;
+  TimeHMS.writeTopRightText(getTimeHMS());
+
   static DisplayObject Line1(0,60);
   Line1.drawXline(tft.width());
 
@@ -924,4 +961,48 @@ void debugScreen()
 void setupScreen(){
 
 
+}
+
+
+String getTimeHMS(){
+  String time_string = "";
+  if (timeSet){
+    time_t now;
+    struct tm timeinfo;
+    
+
+    time(&now);
+    localtime_r(&now, &timeinfo);
+
+    if(timeinfo.tm_hour<10){
+      time_string += "0";
+    }
+    time_string+=String(timeinfo.tm_hour);
+    time_string+=":";
+    if(timeinfo.tm_min<10){
+      time_string += "0";
+    }
+    time_string+=String(timeinfo.tm_min);
+    time_string+=":";
+    if(timeinfo.tm_sec<10){
+      time_string += "0";
+    }
+    time_string+=String(timeinfo.tm_sec);
+    return time_string;
+  }
+  else{
+    time_string = "00:00:00";
+    return time_string;
+  }
+}
+
+void sendCANMessage(uint8_t id, uint8_t *data, uint8_t dlc){
+  twai_message_t message;
+  message.identifier = id;
+  message.flags = 0;
+  message.data_length_code = dlc;
+    for (int i = 0; i < dlc; i++) {
+        message.data[i] = data[i];
+    }
+    esp_err_t result = twai_transmit(&message, pdMS_TO_TICKS(10));
 }

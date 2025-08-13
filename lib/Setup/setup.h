@@ -22,6 +22,7 @@
 //#include <Adafruit_ILI9341.h>
 #include <formulaDisplay.h>
 #include <variables.h>
+#include <timeSetup.h>
 
 extern TFT_eSPI tft;
 
@@ -42,6 +43,10 @@ void screen2();
 void screen3();
 void debugScreen();
 void setupScreen();
+
+String getTimeHMS();
+
+void sendCANMessage(uint8_t id, uint8_t *data, uint8_t dlc);
 
 void Calibracao(void *parameter);
 void ScreenManager(void *parameter);
@@ -66,6 +71,7 @@ void fn_Data_07(__u8 data[DATA_07_DLC]);
 void fn_Data_08(__u8 data[DATA_08_DLC]);
 void fn_Data_09(__u8 data[DATA_09_DLC]);
 void fn_Buffer_Ack(__u8 data[BUFFER_ACK_DLC]);
+void fn_timeSet(__u8 data[TIMESET_DLC]);
 void fn_RPM(__u8 data[RPM_DLC]);
 void fn_ACC(__u8 data[ACC_DLC]);
 void fn_GYRO(__u8 data[GYRO_DLC]);

@@ -8,6 +8,12 @@ const __u8 MESSAGES_DLC = 8;
 const __u8 DEBUG_ID = 0x7B;
 const __u8 DEBUG_DLC = 8;
 
+const __u8 TIMESET_ID = 0x79;
+const __u8 TIMESET_DLC = 5;
+
+const __u8 TIMESET_ACK_ID = 0x7A;
+const __u8 TIMESET_ACK_DLC = 1;
+
 const __u8 DATA_01_ID = 0x02;
 const __u8 DATA_01_DLC = 5;
 

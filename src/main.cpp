@@ -13,7 +13,6 @@ public:
     bool isWritten;
     signed char factor_x = 0;
     signed char factor_y = 0;
-    unsigned char datum;
     const unsigned char max_size = 7;
     const unsigned char factor2 = 3;
     unsigned char object_type=0;
@@ -31,6 +30,7 @@ public:
     unsigned short length;
     unsigned short height;
     unsigned short color = displayRGB(255, 255, 255);
+    unsigned char datum;
 
   public:
     DObj(unsigned short x_, unsigned short y_) : screen_id(Display::getInstance().getCurrentScreen()),pos_x(x_), pos_y(y_)
@@ -294,7 +294,7 @@ QueueHandle_t can_rx_queue;
 
 void fn_Debug(__u8 data[DEBUG_DLC]);
 
-
+uint16_t yPrintln(const DisplayObject *obj);
 
 void setup()
 {
@@ -533,15 +533,13 @@ void fn_Data_01(__u8 data[DATA_01_DLC])
 
   float vBat = vBatSensor(r_vBat);
   float vRef = vRefSensor(r_vRef);
+  float intTemp = internalTemp(r_intTemp);
   String Gear = Gear_Pos(r_Gear);
 
   sensorUpdate(vBat, Voltage_Sensor.index);
+  sensorUpdate(intTemp, Internal_Temperature_Sensor.index);
   sensorUpdate(vRef, V_Ref_Sensor.index);
   sensorUpdate(Gear, Gear_Pos_Sens.index);
-
-  /*Serial.print(r_Gear);
-  Serial.print(" ");*/
-  // Serial.println((xTaskGetTickCount() * 1000) / configTICK_RATE_HZ);
 }
 
 void fn_Data_02(__u8 data[DATA_02_DLC])
@@ -886,20 +884,24 @@ void refreshRateTask(void *parameter)
   Gear.size=7;
   Gear.writeCenterText(Gear_Pos_Sens.value);
 
-  static DisplayObject Gear_Text(tft.width() / 2,(tft.height() / 2)+(Gear.size*font_size_const)+1);
+  static DisplayObject Gear_Text(tft.width() / 2,yPrintln(&Gear));
   Gear_Text.size=2;
   Gear_Text.writeTopCenterText("GEAR");
 
   static DisplayObject RPM(0,0);
   RPM.writeTopLeftText(RPM_Sensor.value);
 
-  static DisplayObject RPM_Text(0,(RPM.size*2*font_size_const)+1);
+  static DisplayObject RPM_Text(0,yPrintln(&RPM));
   RPM_Text.size=2;
   RPM_Text.writeTopLeftText("RPM");
 
   static DisplayObject TimeHMS(tft.width(),0);
   TimeHMS.size=3;
   TimeHMS.writeTopRightText(getTimeHMS());
+
+  static DisplayObject IntTemp(tft.width(),yPrintln(&TimeHMS));
+  IntTemp.size=2;
+  IntTemp.writeTopRightText(Internal_Temperature_Sensor.value + "C");
 
   static DisplayObject Line1(0,60);
   Line1.drawXline(tft.width());
@@ -1005,4 +1007,18 @@ void sendCANMessage(uint8_t id, uint8_t *data, uint8_t dlc){
         message.data[i] = data[i];
     }
     esp_err_t result = twai_transmit(&message, pdMS_TO_TICKS(10));
+}
+
+uint16_t yPrintln(const DisplayObject *obj){
+  float size = (float)obj->size;
+  if (obj->datum == TC_DATUM||obj->datum == TL_DATUM||obj->datum == TR_DATUM){
+    size = size;
+  }
+  if (obj->datum == MC_DATUM||obj->datum == ML_DATUM||obj->datum == MR_DATUM){
+    size = size/2;
+  }
+  if (obj->datum == BC_DATUM||obj->datum == BL_DATUM||obj->datum == BR_DATUM){
+    size = 1;
+  }
+  return (uint16_t)(obj->pos_y + 7 + (size * font_size_const));
 }

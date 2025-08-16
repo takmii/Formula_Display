@@ -80,6 +80,8 @@ void fn_Debug(__u8 data[DEBUG_DLC]);
 void init_twai();
 
 
+
+
 template <typename T>
 void sensorUpdate(T value, __u8 index);
 
@@ -120,7 +122,7 @@ const uint8_t screens[]={
 const uint8_t setupScreen_ID = 10;
 const uint8_t debugScreen_ID = 255;
 
-const uint8_t font_size_const = 4;
+const uint8_t font_size_const = 7;
 
 
 #endif

@@ -1,6 +1,6 @@
 #include <setup.h>
 
-bool debug_mode = 0;
+bool debug_mode = 1;
 
 class Display
 {
@@ -295,6 +295,7 @@ QueueHandle_t can_rx_queue;
 void fn_Debug(__u8 data[DEBUG_DLC]);
 
 uint16_t yPrintln(const DisplayObject *obj);
+uint16_t negyPrintln(const DisplayObject *obj);
 
 void setup()
 {
@@ -551,10 +552,10 @@ void fn_Data_02(__u8 data[DATA_02_DLC])
   __u16 r_WheelAngle = ((data[7] & 0x0F) << 8) + data[6];
 
   float Susp_FR = suspSensor(r_Susp_FR);
-  float Susp_FL = (r_Susp_FL);
-  float Susp_RR = (r_Susp_RR);
-  float Susp_RL = (r_Susp_RL);
-  float WheelAngle = (r_WheelAngle);
+  float Susp_FL = suspSensor(r_Susp_FL);
+  float Susp_RR = suspSensor(r_Susp_RR);
+  float Susp_RL = suspSensor(r_Susp_RL);
+  float WheelAngle = wheelAngleSensor(r_WheelAngle);
 
   sensorUpdate(Susp_FR, Susp_Pos_FR_Sensor.index);
   sensorUpdate(Susp_FL, Susp_Pos_FL_Sensor.index);
@@ -799,7 +800,7 @@ void ScreenManager(void *parameter){
 
     if (!debug_mode){
 
-          screen_selector = Display::getInstance().getCurrentScreen();
+    screen_selector = Display::getInstance().getCurrentScreen();
     bool state1 = checkButton(BTN_RIGHT);
     bool state2 = checkButton(BTN_LEFT);
     bool state3 = checkButton(BTN_RETURN);
@@ -933,29 +934,74 @@ void displaySetScreen(uint8_t id){
 
 void debugScreen()
 {
-  
   displaySetScreen(debugScreen_ID);
   static DisplayObject AccX(0,0);
+  static DisplayObject AccX_Text(0,yPrintln(&AccX));
+
+
   static DisplayObject AccY(tft.width()/2,0);
+  static DisplayObject AccY_Text(tft.width()/2,yPrintln(&AccY));
+
   static DisplayObject AccZ(tft.width(),0);
+  static DisplayObject AccZ_Text(tft.width(),yPrintln(&AccZ));
+
   static DisplayObject GyroX(0,tft.height());
+  static DisplayObject GyroX_Text(0,negyPrintln(&GyroX));
+  
+
   static DisplayObject GyroY(tft.width()/2,tft.height());
+  static DisplayObject GyroY_Text(tft.width()/2,negyPrintln(&GyroY));
+  
   static DisplayObject GyroZ(tft.width(),tft.height());
+  static DisplayObject GyroZ_Text(tft.width(),negyPrintln(&GyroZ));
+
   static DisplayObject Amod(tft.width() / 2,tft.height() / 2);
 
+  static DisplayObject wAngle(0,tft.height() / 2);
+  static DisplayObject wAngle_Text(0,yPrintln(&wAngle));
+
   AccX.size = 3;
+  AccX_Text.size = 2;
+
   AccY.size = 3;
+  AccY_Text.size = 2;
+
   AccZ.size = 3;
+  AccZ_Text.size = 2;
+
   GyroX.size = 3;
+  GyroX_Text.size = 2;
+
   GyroY.size = 3;
+  GyroY_Text.size = 2;
+
   GyroZ.size = 3;
+  GyroZ_Text.size = 2;
+
+  wAngle.size = 3;
+  wAngle_Text.size = 2;
 
   AccX.writeTopLeftText(Accel_X.value);
+  AccX_Text.writeTopLeftText("AccX");
+
   AccY.writeTopCenterText(Accel_Y.value);
+  AccY_Text.writeTopCenterText("AccY");
+
   AccZ.writeTopRightText(Accel_Z.value);
+  AccZ_Text.writeTopRightText("AccZ");
+
   GyroX.writeBottomLeftText(Gyro_X.value);
+  GyroX_Text.writeBottomLeftText("GyroX");
+
   GyroY.writeBottomCenterText(Gyro_Y.value);
+  GyroY_Text.writeBottomCenterText("GyroY");
+
   GyroZ.writeBottomRightText(Gyro_Z.value);
+  GyroZ_Text.writeBottomRightText("GyroZ");
+
+  wAngle.writeLeftText(SteerWheel_Pos_Sensor.value);
+  wAngle_Text.writeTopLeftText("Wheel");
+
   Amod.writeCenterText(Accel.value);
 }
 
@@ -1021,4 +1067,18 @@ uint16_t yPrintln(const DisplayObject *obj){
     size = 1;
   }
   return (uint16_t)(obj->pos_y + 7 + (size * font_size_const));
+}
+
+uint16_t negyPrintln(const DisplayObject *obj){
+  float size = (float)obj->size;
+  if (obj->datum == TC_DATUM||obj->datum == TL_DATUM||obj->datum == TR_DATUM){
+    size = size;
+  }
+  if (obj->datum == MC_DATUM||obj->datum == ML_DATUM||obj->datum == MR_DATUM){
+    size = size/2;
+  }
+  if (obj->datum == BC_DATUM||obj->datum == BL_DATUM||obj->datum == BR_DATUM){
+    size = 1;
+  }
+  return (uint16_t)(obj->pos_y - (7 + (size * font_size_const)));
 }

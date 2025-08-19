@@ -44,7 +44,8 @@ Sensor MAP_Sensor;
 Sensor MAF_Sensor;
 Sensor Cylinder_1_Pressure_Sensor;
 Sensor Cylinder_2_Pressure_Sensor;
-Sensor Firewall_Temperature_Sensor;
+Sensor Firewall_Temperature1_Sensor;
+Sensor Firewall_Temperature2_Sensor;
 Sensor Wing_Extensometer_1_Sensor;
 Sensor Wing_Extensometer_2_Sensor;
 Sensor Wing_Extensometer_3_Sensor;
@@ -97,7 +98,8 @@ Sensor *sensorIndex[] = {
     &MAF_Sensor,
     &Cylinder_1_Pressure_Sensor,
     &Cylinder_2_Pressure_Sensor,
-    &Firewall_Temperature_Sensor,
+    &Firewall_Temperature1_Sensor,
+    &Firewall_Temperature2_Sensor,
     &Wing_Extensometer_1_Sensor,
     &Wing_Extensometer_2_Sensor,
     &Wing_Extensometer_3_Sensor,
@@ -162,7 +164,8 @@ void setSensorName()
     MAF_Sensor.name = "MAF (mm^3/s)";
     Cylinder_1_Pressure_Sensor.name = "Cylinder_1_Press (kPa)";
     Cylinder_2_Pressure_Sensor.name = "Cylinder_2_Press (kPa)";
-    Firewall_Temperature_Sensor.name = "Firewall_Temp (ºC)";
+    Firewall_Temperature1_Sensor.name = "Firewall_Temp_1 (ºC)";
+    Firewall_Temperature2_Sensor.name = "Firewall_Temp_2 (ºC)";
     Wing_Extensometer_1_Sensor.name = "Wing_Ext_1 (mm)";
     Wing_Extensometer_2_Sensor.name = "Wing_Ext_2 (mm)";
     Wing_Extensometer_3_Sensor.name = "Wing_Ext_3 (mm)";

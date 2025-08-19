@@ -367,6 +367,16 @@ void setup()
       1             // Core where the task should run (0 or 1)
   );
 
+    xTaskCreatePinnedToCore(
+      temperatureTask,   // Function to implement the task
+      "Temperature", // Name of the task
+      4096,         // Stack size in words
+      NULL,         // Task input parameter
+      1,            // Priority of the task
+      NULL,         // Task handle
+      1             // Core where the task should run (0 or 1)
+  );
+
   if (!debug_mode){
     displaySetScreen(mainScreen_ID);
   }
@@ -935,7 +945,8 @@ void displaySetScreen(uint8_t id){
 void debugScreen()
 {
   displaySetScreen(debugScreen_ID);
-  static DisplayObject AccX(0,0);
+  
+  /*static DisplayObject AccX(0,0);
   static DisplayObject AccX_Text(0,yPrintln(&AccX));
 
 
@@ -1002,7 +1013,64 @@ void debugScreen()
   wAngle.writeLeftText(SteerWheel_Pos_Sensor.value);
   wAngle_Text.writeTopLeftText("Wheel");
 
-  Amod.writeCenterText(Accel.value);
+  Amod.writeCenterText(Accel.value);*/
+  static DisplayObject Temp_BrakeFL(0,0);
+  static DisplayObject Temp_BrakeFL_Text(0,yPrintln(&Temp_BrakeFL));
+
+
+  static DisplayObject Temp_BrakeFR(tft.width()/2,0);
+  static DisplayObject Temp_BrakeFR_Text(tft.width()/2,yPrintln(&Temp_BrakeFR));
+
+
+  static DisplayObject Temp_BrakeRL(0,tft.height());
+  static DisplayObject Temp_BrakeRL_Text(0,negyPrintln(&Temp_BrakeRL));
+  
+
+  static DisplayObject Temp_BrakeRR(tft.width()/2,tft.height());
+  static DisplayObject Temp_BrakeRR_Text(tft.width()/2,negyPrintln(&Temp_BrakeRR));
+
+  static DisplayObject Firewall_Temp1(0,tft.height() / 2);
+  static DisplayObject Firewall_Temp1_Text(0,yPrintln(&Firewall_Temp1));
+
+  static DisplayObject Firewall_Temp2(tft.width(),tft.height() / 2);
+  static DisplayObject Firewall_Temp2_Text(tft.width(),yPrintln(&Firewall_Temp1));
+  
+  Temp_BrakeFL.size = 3;
+  Temp_BrakeFL_Text.size = 2;
+
+  Temp_BrakeFR.size = 3;
+  Temp_BrakeFR_Text.size = 2;
+
+  Temp_BrakeRL.size = 3;
+  Temp_BrakeRL_Text.size = 2;
+
+  Temp_BrakeRR.size = 3;
+  Temp_BrakeRR_Text.size = 2;
+
+  Firewall_Temp1.size = 3;
+  Firewall_Temp1_Text.size = 2;
+
+  Firewall_Temp2.size = 3;
+  Firewall_Temp2_Text.size = 2;
+
+  Temp_BrakeFL.writeTopLeftText(Disk_Temp_FL_Sensor.value);
+  Temp_BrakeFL_Text.writeTopLeftText("Brake FL");
+
+  Temp_BrakeFR.writeTopRightText(Disk_Temp_FR_Sensor.value);
+  Temp_BrakeFR_Text.writeTopRightText("Brake FR");
+
+  Temp_BrakeRL.writeBottomLeftText(Disk_Temp_RL_Sensor.value);
+  Temp_BrakeRL_Text.writeBottomLeftText("Brake RL");
+
+  Temp_BrakeRR.writeBottomRightText(Disk_Temp_RR_Sensor.value);
+  Temp_BrakeRR_Text.writeBottomRightText("Brake RR");
+
+  Firewall_Temp1.writeLeftText(Firewall_Temperature1_Sensor.value);
+  Firewall_Temp1_Text.writeTopLeftText("Firewall 1");
+
+  Firewall_Temp2.writeRightText(Firewall_Temperature2_Sensor.value);
+  Firewall_Temp2_Text.writeTopRightText("Firewall 2");
+
 }
 
 
@@ -1081,4 +1149,36 @@ uint16_t negyPrintln(const DisplayObject *obj){
     size = 1;
   }
   return (uint16_t)(obj->pos_y - (7 + (size * font_size_const)));
+}
+
+void temperatureTask(void *parameter){
+  TickType_t xLastWakeTime = xTaskGetTickCount();
+  const TickType_t xFrequency = pdMS_TO_TICKS(TEMPERATURE_TIMER);
+  for (;;)
+  {
+    //Ler sensor 1
+    float sensor1;
+    sensorUpdate(sensor1,Disk_Temp_FR_Sensor.index); // Front Right
+    //Ler sensor 2
+    float sensor2;
+    sensorUpdate(sensor2,Disk_Temp_FL_Sensor.index); // Front Left
+    //Ler sensor 3
+    float sensor3;
+    sensorUpdate(sensor3,Disk_Temp_RR_Sensor.index); // Rear Right
+    //Ler sensor 4
+    float sensor4;
+    sensorUpdate(sensor4,Disk_Temp_RL_Sensor.index); // Rear Left
+    //Ler sensor 5
+    float sensor5;
+    sensorUpdate(sensor5,Firewall_Temperature1_Sensor.index);
+    //Ler sensor 6
+    float sensor6;
+    sensorUpdate(sensor6,Firewall_Temperature2_Sensor.index);
+
+
+
+
+    vTaskDelayUntil(&xLastWakeTime, xFrequency);
+  }
+
 }

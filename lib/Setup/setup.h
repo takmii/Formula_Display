@@ -52,6 +52,7 @@ void Calibracao(void *parameter);
 void ScreenManager(void *parameter);
 void refreshRateTask(void *parameter);
 void CAN_receiveTask(void *parameter);
+void temperatureTask(void *parameter);
 void disableBluetooth();
 
 void displaySetScreen(uint8_t id);
@@ -88,6 +89,7 @@ void sensorUpdate(T value, __u8 index);
 #define D_WIFI true
 
 #define DISPLAY_TIMER 10
+#define TEMPERATURE_TIMER 50
 #define CALIBRACAO_TIMER 500
 #define SD_TASK_TIMER CAN_TASK_TIMER
 

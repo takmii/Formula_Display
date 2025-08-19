@@ -6,6 +6,7 @@
 #define V_4095 3.3
 #define A_20V 24818
 #define A_5_5V 6825
+const float VRefMax = 5.1615;
 
 class Sensor {
     public:

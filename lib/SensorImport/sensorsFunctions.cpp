@@ -22,8 +22,8 @@ float vBatSensor(__u16 value){
 float vRefSensor(__u16 value){
   __u16 dop = degreesofPrecision(value,3.3,0.1);
   vRef_ = dop;
-  float vRef = (float) dop * A_5_5V / 4095;
-  return vRef/A_5_5V * 5.5;
+  float vRefProp = (float) dop / 4095;
+  return vRefProp * VRefMax;
 }
 
 float internalTemp(__u16 value){

@@ -23,6 +23,7 @@
 #include <formulaDisplay.h>
 #include <variables.h>
 #include <timeSetup.h>
+#include <max6675.h>
 
 extern TFT_eSPI tft;
 
@@ -78,6 +79,9 @@ void fn_ACC(__u8 data[ACC_DLC]);
 void fn_GYRO(__u8 data[GYRO_DLC]);
 void fn_Debug(__u8 data[DEBUG_DLC]);
 
+float readTempC(MAX6675 * Sensor);
+uint16_t floattoU16(float value, uint8_t precision_bits);
+
 void init_twai();
 
 
@@ -89,7 +93,7 @@ void sensorUpdate(T value, __u8 index);
 #define D_WIFI true
 
 #define DISPLAY_TIMER 10
-#define TEMPERATURE_TIMER 50
+#define TEMPERATURE_TIMER 250
 #define CALIBRACAO_TIMER 500
 #define SD_TASK_TIMER CAN_TASK_TIMER
 
@@ -106,6 +110,15 @@ void sensorUpdate(T value, __u8 index);
 #define BTN_LEFT GPIO_NUM_39
 #define BTN_RIGHT GPIO_NUM_34
 #define BTN_SELECT GPIO_NUM_35
+
+#define V_SO GPIO_NUM_19
+#define V_CLK GPIO_NUM_18
+#define CS_TEMP1 GPIO_NUM_4
+#define CS_TEMP2 GPIO_NUM_16
+#define CS_TEMP3 GPIO_NUM_17
+#define CS_TEMP4 GPIO_NUM_15
+#define CS_TEMP5 GPIO_NUM_2
+#define CS_TEMP6 GPIO_NUM_0
 
 #define REFRESH_RATE 30
 #define REFRESH_TIMER 1000/REFRESH_RATE

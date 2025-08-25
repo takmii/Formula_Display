@@ -51,6 +51,7 @@ extern Sensor Brake_Position_Sensor;
 extern Sensor Fuel_Pressure_Sensor;
 extern Sensor Fuel_Temperature_Sensor;
 extern Sensor Oil_Temperature_Sensor;
+extern Sensor Oil_Pressure_Sensor;
 extern Sensor Intercooler_Temperature_Sensor;
 extern Sensor Intercooler_Pressure_Sensor;
 extern Sensor In_Cooling_Temperature_Sensor;

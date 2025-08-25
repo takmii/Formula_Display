@@ -15,12 +15,12 @@ public:
     signed char factor_y = 0;
     const unsigned char max_size = 7;
     const unsigned char factor2 = 3;
-    unsigned char object_type=0;
+    unsigned char object_type = 0;
     unsigned char screen_id = 0;
-    unsigned short x_length=0;
-    unsigned short y_length=0;
-    unsigned short x_old_length=0;
-    unsigned short y_old_length=0;
+    unsigned short x_length = 0;
+    unsigned short y_length = 0;
+    unsigned short x_old_length = 0;
+    unsigned short y_old_length = 0;
 
   public:
     unsigned char size = 4;
@@ -33,12 +33,13 @@ public:
     unsigned char datum;
 
   public:
-    DObj(unsigned short x_, unsigned short y_) : screen_id(Display::getInstance().getCurrentScreen()),pos_x(x_), pos_y(y_)
+    DObj(unsigned short x_, unsigned short y_) : screen_id(Display::getInstance().getCurrentScreen()), pos_x(x_), pos_y(y_)
     {
       Display::getInstance().registerObject(this);
     }
 
-    unsigned char getScreen() const {
+    unsigned char getScreen() const
+    {
       return screen_id;
     }
 
@@ -60,7 +61,7 @@ public:
 
     void writeCenterText(String value)
     {
-      this->object_type=1;
+      this->object_type = 1;
       this->value = value;
       this->size = min(this->size, this->max_size);
       if (this->font == 2)
@@ -73,7 +74,7 @@ public:
 
     void writeTopCenterText(String value)
     {
-      this->object_type=1;
+      this->object_type = 1;
       this->value = value;
       this->size = min(this->size, this->max_size);
       if (this->font == 2)
@@ -86,7 +87,7 @@ public:
 
     void writeBottomCenterText(String value)
     {
-      this->object_type=1;
+      this->object_type = 1;
       this->value = value;
       this->size = min(this->size, this->max_size);
       if (this->font == 2)
@@ -99,7 +100,7 @@ public:
 
     void writeLeftText(String value)
     {
-      this->object_type=1;
+      this->object_type = 1;
       this->value = value;
       this->size = min(this->size, this->max_size);
       if (this->font == 2)
@@ -112,7 +113,7 @@ public:
 
     void writeTopLeftText(String value)
     {
-      this->object_type=1;
+      this->object_type = 1;
       this->value = value;
       this->size = min(this->size, this->max_size);
       if (this->font == 2)
@@ -125,7 +126,7 @@ public:
 
     void writeBottomLeftText(String value)
     {
-      this->object_type=1;
+      this->object_type = 1;
       this->value = value;
       this->size = min(this->size, this->max_size);
       if (this->font == 2)
@@ -138,7 +139,7 @@ public:
 
     void writeRightText(String value)
     {
-      this->object_type=1;
+      this->object_type = 1;
       this->value = value;
       this->size = min(this->size, this->max_size);
       if (this->font == 2)
@@ -151,7 +152,7 @@ public:
 
     void writeTopRightText(String value)
     {
-      this->object_type=1;
+      this->object_type = 1;
       this->value = value;
       this->size = min(this->size, this->max_size);
       if (this->font == 2)
@@ -164,7 +165,7 @@ public:
 
     void writeBottomRightText(String value)
     {
-      this->object_type=1;
+      this->object_type = 1;
       this->value = value;
       this->size = min(this->size, this->max_size);
       if (this->font == 2)
@@ -177,43 +178,47 @@ public:
 
     void drawXline(unsigned short length)
     {
-      this->object_type=2;
+      this->object_type = 2;
       this->x_length = length;
     }
 
     void drawYline(unsigned short length)
     {
-      this->object_type=3;
+      this->object_type = 3;
       this->y_length = length;
     }
 
     void refresh()
     {
-      if (this->object_type==1){
-      if (this->value != this->oldValue||Display::getInstance().first_update==true)
+      if (this->object_type == 1)
       {
-        tft.setTextFont(this->font);
-        tft.setTextDatum(this->datum);
-        tft.setTextColor(bg_color, bg_color);                                                               // Text color and background
-        tft.setTextSize(this->size);                                                                        // Scale 1 (default) to 7; doesn't affect all fonts
-        tft.drawString(this->oldValue.c_str(), this->pos_x + this->factor_x, this->pos_y + this->factor_y); // (text, x, y, font)
-        tft.setTextColor(this->color, bg_color);
-        tft.drawString(this->value.c_str(), this->pos_x + this->factor_x, this->pos_y + this->factor_y); // (text, x, y, font)
-        this->oldValue = this->value;
+        if (this->value != this->oldValue || Display::getInstance().first_update == true)
+        {
+          tft.setTextFont(this->font);
+          tft.setTextDatum(this->datum);
+          tft.setTextColor(bg_color, bg_color);                                                               // Text color and background
+          tft.setTextSize(this->size);                                                                        // Scale 1 (default) to 7; doesn't affect all fonts
+          tft.drawString(this->oldValue.c_str(), this->pos_x + this->factor_x, this->pos_y + this->factor_y); // (text, x, y, font)
+          tft.setTextColor(this->color, bg_color);
+          tft.drawString(this->value.c_str(), this->pos_x + this->factor_x, this->pos_y + this->factor_y); // (text, x, y, font)
+          this->oldValue = this->value;
+        }
+      }
+      else if (this->object_type == 2)
+      {
+        if (this->x_length != this->x_old_length || Display::getInstance().first_update == true)
+        {
+          tft.drawFastHLine(this->pos_x, this->pos_y, this->x_length, this->color);
+        }
+      }
+      else if (this->object_type == 3)
+      {
+        if (this->y_length != this->y_old_length || Display::getInstance().first_update == true)
+        {
+          tft.drawFastVLine(this->pos_x, this->pos_y, this->y_length, this->color);
+        }
       }
     }
-    else if(this->object_type==2){
-      if (this->x_length!=this->x_old_length||Display::getInstance().first_update==true){
-        tft.drawFastHLine(this->pos_x, this->pos_y, this->x_length, this->color);
-      }
-    }
-    else if(this->object_type==3){
-      if (this->y_length!=this->y_old_length||Display::getInstance().first_update==true){
-        tft.drawFastVLine(this->pos_x, this->pos_y, this->y_length, this->color);
-      }
-    }
-  }
-    
   };
 
   void registerObject(DObj *obj)
@@ -231,22 +236,26 @@ public:
   {
     for (auto obj : getInstance().objects)
     {
-      if (obj->getScreen() == getInstance().getCurrentScreen()) {
-      obj->refresh();
+      if (obj->getScreen() == getInstance().getCurrentScreen())
+      {
+        obj->refresh();
+      }
     }
-    }
-    if (getInstance().first_update==true){
-    getInstance().first_update=false;
+    if (getInstance().first_update == true)
+    {
+      getInstance().first_update = false;
     }
   }
 
-  void setScreen(uint8_t screen) {
+  void setScreen(uint8_t screen)
+  {
     tft.fillScreen(bg_color);
     current_screen = screen;
-    getInstance().first_update=true;
+    getInstance().first_update = true;
   }
 
-  uint8_t getCurrentScreen() const {
+  uint8_t getCurrentScreen() const
+  {
     return current_screen;
   }
 
@@ -256,7 +265,6 @@ private:
 };
 
 using DisplayObject = Display::DObj;
-
 
 __u16 bg_color = DisplayObject::displayRGB(14, 3, 51);
 
@@ -297,6 +305,13 @@ void fn_Debug(__u8 data[DEBUG_DLC]);
 uint16_t yPrintln(const DisplayObject *obj);
 uint16_t negyPrintln(const DisplayObject *obj);
 
+MAX6675 s_BrakeTempFR(V_CLK, CS_TEMP1, V_SO);
+MAX6675 s_BrakeTempFL(V_CLK, CS_TEMP2, V_SO);
+MAX6675 s_BrakeTempRR(V_CLK, CS_TEMP3, V_SO);
+MAX6675 s_BrakeTempRL(V_CLK, CS_TEMP4, V_SO);
+MAX6675 s_FirewallTemp1(V_CLK, CS_TEMP5, V_SO);
+MAX6675 s_FirewallTemp2(V_CLK, CS_TEMP6, V_SO);
+
 void setup()
 {
   Serial.begin(115200);
@@ -305,10 +320,10 @@ void setup()
   }
   init_twai();
   disableBluetooth();
-  pinMode(BTN_LEFT,INPUT);
-  pinMode(BTN_RIGHT,INPUT);
-  pinMode(BTN_RETURN,INPUT);
-  pinMode(BTN_SELECT,INPUT);
+  pinMode(BTN_LEFT, INPUT);
+  pinMode(BTN_RIGHT, INPUT);
+  pinMode(BTN_RETURN, INPUT);
+  pinMode(BTN_SELECT, INPUT);
 
   if (WiFi.status() != WL_CONNECTED)
   {
@@ -348,36 +363,37 @@ void setup()
   );
 
   xTaskCreatePinnedToCore(
-      ScreenManager,   // Function to implement the task
+      ScreenManager,    // Function to implement the task
       "Screen Manager", // Name of the task
-      2048,         // Stack size in words
-      NULL,         // Task input parameter
-      1,            // Priority of the task
-      NULL,         // Task handle
-      1             // Core where the task should run (0 or 1)
+      2048,             // Stack size in words
+      NULL,             // Task input parameter
+      1,                // Priority of the task
+      NULL,             // Task handle
+      1                 // Core where the task should run (0 or 1)
   );
 
   xTaskCreatePinnedToCore(
-      refreshRateTask,   // Function to implement the task
-      "Refresh", // Name of the task
-      4096,         // Stack size in words
-      NULL,         // Task input parameter
-      2,            // Priority of the task
-      NULL,         // Task handle
-      1             // Core where the task should run (0 or 1)
+      refreshRateTask, // Function to implement the task
+      "Refresh",       // Name of the task
+      4096,            // Stack size in words
+      NULL,            // Task input parameter
+      2,               // Priority of the task
+      NULL,            // Task handle
+      1                // Core where the task should run (0 or 1)
   );
 
-    xTaskCreatePinnedToCore(
-      temperatureTask,   // Function to implement the task
-      "Temperature", // Name of the task
-      4096,         // Stack size in words
-      NULL,         // Task input parameter
-      1,            // Priority of the task
-      NULL,         // Task handle
-      1             // Core where the task should run (0 or 1)
+  xTaskCreatePinnedToCore(
+      temperatureTask, // Function to implement the task
+      "Temperature",   // Name of the task
+      4096,            // Stack size in words
+      NULL,            // Task input parameter
+      1,               // Priority of the task
+      NULL,            // Task handle
+      1                // Core where the task should run (0 or 1)
   );
 
-  if (!debug_mode){
+  if (!debug_mode)
+  {
     displaySetScreen(mainScreen_ID);
   }
 }
@@ -595,6 +611,14 @@ void fn_Data_03(__u8 data[DATA_03_DLC])
 
 void fn_Data_04(__u8 data[DATA_04_DLC])
 {
+  __u16 r_Oil_Pressure = ((data[1] & 0x0F) << 8) + data[0];
+  //__u16 r_Oil_Temp = (data[2] << 4) + ((data[1] >> 4) & 0x0F);
+
+  float Oil_Pressure = (r_Oil_Pressure);
+  //float Oil_Temp = (r_Oil_Temp);
+  
+  sensorUpdate(Oil_Pressure, Oil_Pressure_Sensor.index);
+  //sensorUpdate(Oil_Temp, Oil_Temperature_Sensor.index);
 }
 
 void fn_Data_05(__u8 data[DATA_05_DLC])
@@ -636,10 +660,10 @@ void fn_ACC(__u8 data[ACC_DLC])
   int16_t AccZ = (int16_t)(data[5] << 8 | data[4]);
   int16_t AccMod = (int16_t)(data[7] << 8 | data[6]);
 
-  float aX = (float)AccX/16384;
-  float aY = (float)AccY/16384;
-  float aZ = (float)AccZ/16384;
-  float aMod = (float)AccMod/16384;
+  float aX = (float)AccX / 16384;
+  float aY = (float)AccY / 16384;
+  float aZ = (float)AccZ / 16384;
+  float aMod = (float)AccMod / 16384;
   sensorUpdate(aX, Accel_X.index);
   sensorUpdate(aY, Accel_Y.index);
   sensorUpdate(aZ, Accel_Z.index);
@@ -652,53 +676,53 @@ void fn_GYRO(__u8 data[GYRO_DLC])
   int16_t GyY = (int16_t)(data[3] << 8 | data[2]);
   int16_t GyZ = (int16_t)(data[5] << 8 | data[4]);
 
-    float roll_rate = 1.3;
-    float pitch_rate = -3.25;
-    float yaw_rate = -1.12;
-    float RateRoll,RatePitch,RateYaw;
+  float roll_rate = 1.3;
+  float pitch_rate = -3.25;
+  float yaw_rate = -1.12;
+  float RateRoll, RatePitch, RateYaw;
 
+  RateRoll = (float)GyX / 65.5;
+  RatePitch = (float)GyY / 65.5;
+  RateYaw = (float)GyZ / 65.5;
 
-    RateRoll=(float)GyX/65.5;
-    RatePitch=(float)GyY/65.5;
-    RateYaw=(float)GyZ/65.5;
+  RateRoll -= roll_rate;
+  RatePitch -= pitch_rate;
+  RateYaw -= yaw_rate;
 
-    RateRoll-=roll_rate;
-    RatePitch-=pitch_rate;
-    RateYaw-=yaw_rate;
-
-    sensorUpdate(RateRoll, Gyro_X.index);
-    sensorUpdate(RatePitch, Gyro_Y.index);
-    sensorUpdate(RateYaw, Gyro_Z.index);
+  sensorUpdate(RateRoll, Gyro_X.index);
+  sensorUpdate(RatePitch, Gyro_Y.index);
+  sensorUpdate(RateYaw, Gyro_Z.index);
 }
 
-void fn_timeSet(__u8 data[TIMESET_DLC]){
-      uint8_t day    =  data[0] & 0x1F;       
-      uint8_t month  = (data[0] >> 5) & 0x07;         
-      month |= (data[1] & 0x01) << 3;                 
+void fn_timeSet(__u8 data[TIMESET_DLC])
+{
+  uint8_t day = data[0] & 0x1F;
+  uint8_t month = (data[0] >> 5) & 0x07;
+  month |= (data[1] & 0x01) << 3;
 
-      uint16_t year  = (data[1] >> 1) & 0x7F;          
-      year |= ((data[2] & 0x1F) << 7);                  
+  uint16_t year = (data[1] >> 1) & 0x7F;
+  year |= ((data[2] & 0x1F) << 7);
 
-      uint8_t hour   = (data[2] >> 5) & 0x07;           
-      hour |= (data[3] & 0x03) << 3;                    
+  uint8_t hour = (data[2] >> 5) & 0x07;
+  hour |= (data[3] & 0x03) << 3;
 
-      uint8_t minute = (data[3] >> 2) & 0x3F;           
-      uint8_t second =  data[4] & 0x3F; 
+  uint8_t minute = (data[3] >> 2) & 0x3F;
+  uint8_t second = data[4] & 0x3F;
 
-      struct tm t;
-      t.tm_year = year - 1900;
-      t.tm_mon = month - 1;
-      t.tm_mday = day;
-      t.tm_hour = hour;
-      t.tm_min = minute;
-      t.tm_sec = second;
-      t.tm_isdst = 0;
-      time_t timeSinceEpoch = mktime(&t);
-      struct timeval tv = {.tv_sec = timeSinceEpoch, .tv_usec = 0};
-      settimeofday(&tv, nullptr);
-      uint8_t ack[TIMESET_ACK_DLC]={1};
-      timeSet=true;
-      sendCANMessage(TIMESET_ACK_ID,ack,TIMESET_ACK_DLC);
+  struct tm t;
+  t.tm_year = year - 1900;
+  t.tm_mon = month - 1;
+  t.tm_mday = day;
+  t.tm_hour = hour;
+  t.tm_min = minute;
+  t.tm_sec = second;
+  t.tm_isdst = 0;
+  time_t timeSinceEpoch = mktime(&t);
+  struct timeval tv = {.tv_sec = timeSinceEpoch, .tv_usec = 0};
+  settimeofday(&tv, nullptr);
+  uint8_t ack[TIMESET_ACK_DLC] = {1};
+  timeSet = true;
+  sendCANMessage(TIMESET_ACK_ID, ack, TIMESET_ACK_DLC);
 }
 
 void fn_Buffer_Ack(__u8 data[BUFFER_ACK_DLC])
@@ -786,72 +810,85 @@ void Calibracao(void *parameter)
   const TickType_t xFrequency = pdMS_TO_TICKS(CALIBRACAO_TIMER);
   for (;;)
   {
-    if (debug_mode){
+    if (debug_mode)
+    {
       debugScreen();
     }
     vTaskDelayUntil(&xLastWakeTime, xFrequency);
   }
 }
 
-void ScreenManager(void *parameter){
+void ScreenManager(void *parameter)
+{
   TickType_t xLastWakeTime = xTaskGetTickCount();
   const TickType_t xFrequency = pdMS_TO_TICKS(REFRESH_TIMER);
   static uint8_t screen_selector;
   static bool setup_mode = false;
   static const uint8_t num_screens = sizeof(screens) / sizeof(screens[0]);
-  static bool pressed1=false;
-  static bool pressed2=false;
-  static bool pressed3=false;
-  static bool pressed4=false;
-  static uint8_t current_index=0;
+  static bool pressed1 = false;
+  static bool pressed2 = false;
+  static bool pressed3 = false;
+  static bool pressed4 = false;
+  static uint8_t current_index = 0;
   for (;;)
   {
 
+    if (!debug_mode)
+    {
 
-    if (!debug_mode){
+      screen_selector = Display::getInstance().getCurrentScreen();
+      bool state1 = checkButton(BTN_RIGHT);
+      bool state2 = checkButton(BTN_LEFT);
+      bool state3 = checkButton(BTN_RETURN);
+      bool state4 = checkButton(BTN_SELECT);
 
-    screen_selector = Display::getInstance().getCurrentScreen();
-    bool state1 = checkButton(BTN_RIGHT);
-    bool state2 = checkButton(BTN_LEFT);
-    bool state3 = checkButton(BTN_RETURN);
-    bool state4 = checkButton(BTN_SELECT);
-
-    if ((state1 && !pressed1) && (state2&& !pressed2)) {
-      if (!setup_mode) {
-        setup_mode = true;
-        pressed1=true;
-        pressed2=true;
-        
+      if ((state1 && !pressed1) && (state2 && !pressed2))
+      {
+        if (!setup_mode)
+        {
+          setup_mode = true;
+          pressed1 = true;
+          pressed2 = true;
+        }
       }
-    }
 
-    if (state1 && !pressed1) {
-      current_index = (current_index + 1) % num_screens;
-      screen_selector=screens[current_index];
-      pressed1=true;
-    }
-    else if(!state1 && pressed1){
-      pressed1=false;
-    }
-
-    if (state2 && !pressed2) {
-      if (current_index == 0) {
-        current_index = num_screens - 1;
-      } else {
-        current_index--;
+      if (state1 && !pressed1)
+      {
+        current_index = (current_index + 1) % num_screens;
+        screen_selector = screens[current_index];
+        pressed1 = true;
       }
-      screen_selector=screens[current_index];
-      pressed2=true;
-    }
-    else if(!state2 && pressed2){
-      pressed2=false;
-    }
-    if (setup_mode){
-      setupScreen();
-    }
+      else if (!state1 && pressed1)
+      {
+        pressed1 = false;
+      }
 
-    else{
-      switch(screen_selector){
+      if (state2 && !pressed2)
+      {
+        if (current_index == 0)
+        {
+          current_index = num_screens - 1;
+        }
+        else
+        {
+          current_index--;
+        }
+        screen_selector = screens[current_index];
+        pressed2 = true;
+      }
+      else if (!state2 && pressed2)
+      {
+        pressed2 = false;
+      }
+      if (setup_mode)
+      {
+        setupScreen();
+      }
+
+      else
+      {
+        switch (screen_selector)
+        {
         case mainScreen_ID:
           mainScreen();
           break;
@@ -861,21 +898,21 @@ void ScreenManager(void *parameter){
         case screen3_ID:
           screen3();
           break;
-      };
-    }
+        };
+      }
     }
     vTaskDelayUntil(&xLastWakeTime, xFrequency);
   }
-
 }
 
-bool checkButton(uint8_t pin) {
+bool checkButton(uint8_t pin)
+{
   return digitalRead(pin) == HIGH;
 }
 
 void refreshRateTask(void *parameter)
 {
-    TickType_t xLastWakeTime = xTaskGetTickCount();
+  TickType_t xLastWakeTime = xTaskGetTickCount();
   const TickType_t xFrequency = pdMS_TO_TICKS(REFRESH_TIMER);
   for (;;)
   {
@@ -884,69 +921,68 @@ void refreshRateTask(void *parameter)
   }
 }
 
-
 // WRITE FUNCTIONS
 
-   void mainScreen()
+void mainScreen()
 {
   displaySetScreen(mainScreen_ID);
 
-  static DisplayObject Gear(tft.width() / 2,tft.height() / 2);
-  Gear.size=7;
+  static DisplayObject Gear(tft.width() / 2, tft.height() / 2);
+  Gear.size = 7;
   Gear.writeCenterText(Gear_Pos_Sens.value);
 
-  static DisplayObject Gear_Text(tft.width() / 2,yPrintln(&Gear));
-  Gear_Text.size=2;
+  static DisplayObject Gear_Text(tft.width() / 2, yPrintln(&Gear));
+  Gear_Text.size = 2;
   Gear_Text.writeTopCenterText("GEAR");
 
-  static DisplayObject RPM(0,0);
+  static DisplayObject RPM(0, 0);
   RPM.writeTopLeftText(RPM_Sensor.value);
 
-  static DisplayObject RPM_Text(0,yPrintln(&RPM));
-  RPM_Text.size=2;
+  static DisplayObject RPM_Text(0, yPrintln(&RPM));
+  RPM_Text.size = 2;
   RPM_Text.writeTopLeftText("RPM");
 
-  static DisplayObject TimeHMS(tft.width(),0);
-  TimeHMS.size=3;
+  static DisplayObject TimeHMS(tft.width(), 0);
+  TimeHMS.size = 3;
   TimeHMS.writeTopRightText(getTimeHMS());
 
-  static DisplayObject IntTemp(tft.width(),yPrintln(&TimeHMS));
-  IntTemp.size=2;
+  static DisplayObject IntTemp(tft.width(), yPrintln(&TimeHMS));
+  IntTemp.size = 2;
   IntTemp.writeTopRightText(Internal_Temperature_Sensor.value + "C");
 
-  static DisplayObject Line1(0,60);
+  static DisplayObject Line1(0, 60);
   Line1.drawXline(tft.width());
 
-  static DisplayObject Line2(0,tft.height()-60);
+  static DisplayObject Line2(0, tft.height() - 60);
   Line2.drawXline(tft.width());
-
 }
 
 void screen2()
 {
   displaySetScreen(screen2_ID);
-  static DisplayObject text2(tft.width() / 2,220);
+  static DisplayObject text2(tft.width() / 2, 220);
   text2.writeBottomCenterText("Test 2");
-
 }
 void screen3()
 {
   displaySetScreen(screen3_ID);
-  static DisplayObject text3(tft.width() / 2,220);
+  static DisplayObject text3(tft.width() / 2, 220);
   text3.writeBottomCenterText("AAAAA");
 }
 
-void displaySetScreen(uint8_t id){
-  if (Display::getInstance().getCurrentScreen()!=id){
-  Display::getInstance().setScreen(id);
+void displaySetScreen(uint8_t id)
+{
+  if (Display::getInstance().getCurrentScreen() != id)
+  {
+    Display::getInstance().setScreen(id);
   }
 }
 
 void debugScreen()
 {
   displaySetScreen(debugScreen_ID);
-  
-  /*static DisplayObject AccX(0,0);
+
+  static DisplayObject AccX(0,0);
   static DisplayObject AccX_Text(0,yPrintln(&AccX));
 
 
@@ -958,11 +994,11 @@ void debugScreen()
 
   static DisplayObject GyroX(0,tft.height());
   static DisplayObject GyroX_Text(0,negyPrintln(&GyroX));
-  
+
 
   static DisplayObject GyroY(tft.width()/2,tft.height());
   static DisplayObject GyroY_Text(tft.width()/2,negyPrintln(&GyroY));
-  
+
   static DisplayObject GyroZ(tft.width(),tft.height());
   static DisplayObject GyroZ_Text(tft.width(),negyPrintln(&GyroZ));
 
@@ -970,6 +1006,9 @@ void debugScreen()
 
   static DisplayObject wAngle(0,tft.height() / 2);
   static DisplayObject wAngle_Text(0,yPrintln(&wAngle));
+
+  static DisplayObject OilPress(tft.width(),tft.height() / 2);
+  static DisplayObject OilPress_Text(tft.width(),yPrintln(&OilPress));
 
   AccX.size = 3;
   AccX_Text.size = 2;
@@ -989,8 +1028,14 @@ void debugScreen()
   GyroZ.size = 3;
   GyroZ_Text.size = 2;
 
+  Amod.size = 3;
+
   wAngle.size = 3;
   wAngle_Text.size = 2;
+
+  OilPress.size = 3;
+  OilPress_Text.size = 2;
+
 
   AccX.writeTopLeftText(Accel_X.value);
   AccX_Text.writeTopLeftText("AccX");
@@ -1011,30 +1056,30 @@ void debugScreen()
   GyroZ_Text.writeBottomRightText("GyroZ");
 
   wAngle.writeLeftText(SteerWheel_Pos_Sensor.value);
-  wAngle_Text.writeTopLeftText("Wheel");
+  wAngle_Text.writeLeftText("Wheel");
 
-  Amod.writeCenterText(Accel.value);*/
-  static DisplayObject Temp_BrakeFL(0,0);
-  static DisplayObject Temp_BrakeFL_Text(0,yPrintln(&Temp_BrakeFL));
+  OilPress.writeRightText(Oil_Pressure_Sensor.value);
+  OilPress_Text.writeRightText("Oil Press");
 
+  Amod.writeCenterText(Accel.value);
+  /*static DisplayObject Temp_BrakeFL(0, 0);
+  static DisplayObject Temp_BrakeFL_Text(0, yPrintln(&Temp_BrakeFL));
 
-  static DisplayObject Temp_BrakeFR(tft.width()/2,0);
-  static DisplayObject Temp_BrakeFR_Text(tft.width()/2,yPrintln(&Temp_BrakeFR));
+  static DisplayObject Temp_BrakeFR(tft.width(), 0);
+  static DisplayObject Temp_BrakeFR_Text(tft.width(), yPrintln(&Temp_BrakeFR));
 
+  static DisplayObject Temp_BrakeRL(0, tft.height());
+  static DisplayObject Temp_BrakeRL_Text(0, negyPrintln(&Temp_BrakeRL));
 
-  static DisplayObject Temp_BrakeRL(0,tft.height());
-  static DisplayObject Temp_BrakeRL_Text(0,negyPrintln(&Temp_BrakeRL));
-  
+  static DisplayObject Temp_BrakeRR(tft.width(), tft.height());
+  static DisplayObject Temp_BrakeRR_Text(tft.width(), negyPrintln(&Temp_BrakeRR));
 
-  static DisplayObject Temp_BrakeRR(tft.width()/2,tft.height());
-  static DisplayObject Temp_BrakeRR_Text(tft.width()/2,negyPrintln(&Temp_BrakeRR));
+  static DisplayObject Firewall_Temp1(0, tft.height() / 2);
+  static DisplayObject Firewall_Temp1_Text(0, yPrintln(&Firewall_Temp1));
 
-  static DisplayObject Firewall_Temp1(0,tft.height() / 2);
-  static DisplayObject Firewall_Temp1_Text(0,yPrintln(&Firewall_Temp1));
+  static DisplayObject Firewall_Temp2(tft.width(), tft.height() / 2);
+  static DisplayObject Firewall_Temp2_Text(tft.width(), yPrintln(&Firewall_Temp1));
 
-  static DisplayObject Firewall_Temp2(tft.width(),tft.height() / 2);
-  static DisplayObject Firewall_Temp2_Text(tft.width(),yPrintln(&Firewall_Temp1));
-  
   Temp_BrakeFL.size = 3;
   Temp_BrakeFL_Text.size = 2;
 
@@ -1053,132 +1098,182 @@ void debugScreen()
   Firewall_Temp2.size = 3;
   Firewall_Temp2_Text.size = 2;
 
-  Temp_BrakeFL.writeTopLeftText(Disk_Temp_FL_Sensor.value);
+  Temp_BrakeFL.writeTopLeftText(Disk_Temp_FL_Sensor.value + "C");
   Temp_BrakeFL_Text.writeTopLeftText("Brake FL");
 
-  Temp_BrakeFR.writeTopRightText(Disk_Temp_FR_Sensor.value);
+  Temp_BrakeFR.writeTopRightText(Disk_Temp_FR_Sensor.value + "C");
   Temp_BrakeFR_Text.writeTopRightText("Brake FR");
 
-  Temp_BrakeRL.writeBottomLeftText(Disk_Temp_RL_Sensor.value);
+  Temp_BrakeRL.writeBottomLeftText(Disk_Temp_RL_Sensor.value + "C");
   Temp_BrakeRL_Text.writeBottomLeftText("Brake RL");
 
-  Temp_BrakeRR.writeBottomRightText(Disk_Temp_RR_Sensor.value);
+  Temp_BrakeRR.writeBottomRightText(Disk_Temp_RR_Sensor.value + "C");
   Temp_BrakeRR_Text.writeBottomRightText("Brake RR");
 
-  Firewall_Temp1.writeLeftText(Firewall_Temperature1_Sensor.value);
-  Firewall_Temp1_Text.writeTopLeftText("Firewall 1");
+  Firewall_Temp1.writeLeftText(Firewall_Temperature1_Sensor.value + "C");
+  Firewall_Temp1_Text.writeLeftText("Firewall 1");
 
-  Firewall_Temp2.writeRightText(Firewall_Temperature2_Sensor.value);
-  Firewall_Temp2_Text.writeTopRightText("Firewall 2");
-
+  Firewall_Temp2.writeRightText(Firewall_Temperature2_Sensor.value + "C");
+  Firewall_Temp2_Text.writeRightText("Firewall 2");*/
 }
 
-
-void setupScreen(){
-
-
+void setupScreen()
+{
 }
 
-
-String getTimeHMS(){
+String getTimeHMS()
+{
   String time_string = "";
-  if (timeSet){
+  if (timeSet)
+  {
     time_t now;
     struct tm timeinfo;
-    
 
     time(&now);
     localtime_r(&now, &timeinfo);
 
-    if(timeinfo.tm_hour<10){
+    if (timeinfo.tm_hour < 10)
+    {
       time_string += "0";
     }
-    time_string+=String(timeinfo.tm_hour);
-    time_string+=":";
-    if(timeinfo.tm_min<10){
+    time_string += String(timeinfo.tm_hour);
+    time_string += ":";
+    if (timeinfo.tm_min < 10)
+    {
       time_string += "0";
     }
-    time_string+=String(timeinfo.tm_min);
-    time_string+=":";
-    if(timeinfo.tm_sec<10){
+    time_string += String(timeinfo.tm_min);
+    time_string += ":";
+    if (timeinfo.tm_sec < 10)
+    {
       time_string += "0";
     }
-    time_string+=String(timeinfo.tm_sec);
+    time_string += String(timeinfo.tm_sec);
     return time_string;
   }
-  else{
+  else
+  {
     time_string = "00:00:00";
     return time_string;
   }
 }
 
-void sendCANMessage(uint8_t id, uint8_t *data, uint8_t dlc){
+void sendCANMessage(uint8_t id, uint8_t *data, uint8_t dlc)
+{
   twai_message_t message;
   message.identifier = id;
   message.flags = 0;
   message.data_length_code = dlc;
-    for (int i = 0; i < dlc; i++) {
-        message.data[i] = data[i];
-    }
-    esp_err_t result = twai_transmit(&message, pdMS_TO_TICKS(10));
+  for (int i = 0; i < dlc; i++)
+  {
+    message.data[i] = data[i];
+  }
+  esp_err_t result = twai_transmit(&message, pdMS_TO_TICKS(10));
 }
 
-uint16_t yPrintln(const DisplayObject *obj){
+uint16_t yPrintln(const DisplayObject *obj)
+{
   float size = (float)obj->size;
-  if (obj->datum == TC_DATUM||obj->datum == TL_DATUM||obj->datum == TR_DATUM){
+  if (obj->datum == TC_DATUM || obj->datum == TL_DATUM || obj->datum == TR_DATUM)
+  {
     size = size;
   }
-  if (obj->datum == MC_DATUM||obj->datum == ML_DATUM||obj->datum == MR_DATUM){
-    size = size/2;
+  if (obj->datum == MC_DATUM || obj->datum == ML_DATUM || obj->datum == MR_DATUM)
+  {
+    size = size / 2;
   }
-  if (obj->datum == BC_DATUM||obj->datum == BL_DATUM||obj->datum == BR_DATUM){
+  if (obj->datum == BC_DATUM || obj->datum == BL_DATUM || obj->datum == BR_DATUM)
+  {
     size = 1;
   }
   return (uint16_t)(obj->pos_y + 7 + (size * font_size_const));
 }
 
-uint16_t negyPrintln(const DisplayObject *obj){
+uint16_t negyPrintln(const DisplayObject *obj)
+{
   float size = (float)obj->size;
-  if (obj->datum == TC_DATUM||obj->datum == TL_DATUM||obj->datum == TR_DATUM){
+  if (obj->datum == TC_DATUM || obj->datum == TL_DATUM || obj->datum == TR_DATUM)
+  {
     size = size;
   }
-  if (obj->datum == MC_DATUM||obj->datum == ML_DATUM||obj->datum == MR_DATUM){
-    size = size/2;
+  if (obj->datum == MC_DATUM || obj->datum == ML_DATUM || obj->datum == MR_DATUM)
+  {
+    size = size / 2;
   }
-  if (obj->datum == BC_DATUM||obj->datum == BL_DATUM||obj->datum == BR_DATUM){
+  if (obj->datum == BC_DATUM || obj->datum == BL_DATUM || obj->datum == BR_DATUM)
+  {
     size = 1;
   }
   return (uint16_t)(obj->pos_y - (7 + (size * font_size_const)));
 }
 
-void temperatureTask(void *parameter){
+void temperatureTask(void *parameter)
+{
   TickType_t xLastWakeTime = xTaskGetTickCount();
+  static uint8_t data[8];
   const TickType_t xFrequency = pdMS_TO_TICKS(TEMPERATURE_TIMER);
   for (;;)
   {
-    //Ler sensor 1
-    float sensor1;
-    sensorUpdate(sensor1,Disk_Temp_FR_Sensor.index); // Front Right
-    //Ler sensor 2
-    float sensor2;
-    sensorUpdate(sensor2,Disk_Temp_FL_Sensor.index); // Front Left
-    //Ler sensor 3
-    float sensor3;
-    sensorUpdate(sensor3,Disk_Temp_RR_Sensor.index); // Rear Right
-    //Ler sensor 4
-    float sensor4;
-    sensorUpdate(sensor4,Disk_Temp_RL_Sensor.index); // Rear Left
-    //Ler sensor 5
-    float sensor5;
-    sensorUpdate(sensor5,Firewall_Temperature1_Sensor.index);
-    //Ler sensor 6
-    float sensor6;
-    sensorUpdate(sensor6,Firewall_Temperature2_Sensor.index);
+    // Ler sensor 1
+    float DiskTemp_FR = readTempC(&s_BrakeTempFR);
+    sensorUpdate(DiskTemp_FR, Disk_Temp_FR_Sensor.index); // Front Right
+    uint16_t DT_FR = floattoU16(DiskTemp_FR, 2);
+
+    // Ler sensor 2
+    float DiskTemp_FL = readTempC(&s_BrakeTempFL);
+    sensorUpdate(DiskTemp_FL, Disk_Temp_FL_Sensor.index); // Front Left
+    uint16_t DT_FL = floattoU16(DiskTemp_FL, 2);
+
+    // Ler sensor 3
+    float DiskTemp_RR = readTempC(&s_BrakeTempRR);
+    sensorUpdate(DiskTemp_RR, Disk_Temp_RR_Sensor.index); // Rear Right
+    uint16_t DT_RR = floattoU16(DiskTemp_RR, 2);
+
+    // Ler sensor 4
+    float DiskTemp_RL = readTempC(&s_BrakeTempRL);
+    sensorUpdate(DiskTemp_RL, Disk_Temp_RL_Sensor.index); // Rear Left
+    uint16_t DT_RL = floattoU16(DiskTemp_RL, 2);
+
+    // Ler sensor 5
+    float FirewallTemp_1 = readTempC(&s_FirewallTemp1);
+    sensorUpdate(FirewallTemp_1, Firewall_Temperature1_Sensor.index);
+    uint16_t DT_F1 = floattoU16(FirewallTemp_1, 2);
+
+    // Ler sensor 6
+    float FirewallTemp_2 = readTempC(&s_FirewallTemp2);
+    sensorUpdate(FirewallTemp_2, Firewall_Temperature2_Sensor.index);
+    uint16_t DT_F2 = floattoU16(FirewallTemp_2, 2);
 
 
+    data[0] = DT_FR & 0xFF;
+    data[1] = ((DT_FR >> 8) & 0x07) | ((DT_FL & 0x1F) << 3);
+    data[2] = ((DT_FL >> 5) & 0x3F) | ((DT_RR & 0x03) << 6);
+    data[3] = (DT_RR >> 2) & 0xFF;
+    data[4] = ((DT_RR >> 10) & 0x01) | ((DT_RL & 0x7F) << 1);
+    data[5] = ((DT_RL >> 7) & 0x0F) | ((DT_F1 & 0x0F) << 4);
+    data[6] = ((DT_F1 >> 4) & 0x1F) | ((DT_F2 & 0x07) << 5);
+    data[7] = (DT_F2 >> 3) & 0xFF;
 
-
+    sendCANMessage(TEMP_ID, data, TEMP_DLC);
+    
     vTaskDelayUntil(&xLastWakeTime, xFrequency);
   }
+}
 
+float readTempC(MAX6675 *Sensor)
+{
+  float data = Sensor->readCelsius();
+  data = std::isnan(data) ? 0.0f : data;
+  return data;
+}
+
+uint16_t floattoU16(float value, uint8_t precision_bits)
+{
+  uint16_t retValue = floor(value);
+  float dif = value - retValue;
+  uint16_t scale = 1 << precision_bits;
+  uint16_t precision = dif * scale;
+  retValue = (precision == scale) ? retValue + 1 : retValue;
+  retValue = (retValue << precision_bits) + (precision % scale);
+  return retValue;
 }

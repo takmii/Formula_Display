@@ -86,5 +86,5 @@ unsigned short degreesofPrecision(uint16_t data, float max_Value, float decimal)
 }
 
 float vRef_Proportion(uint16_t data){
-  return (float)data/vRef_;
+  return ((float)data / vRef_ >= 1.0f) ? 1.0f : (float)data / vRef_;
 }

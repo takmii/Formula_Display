@@ -35,7 +35,7 @@ __u16 displayHEX(const char* hexcode);
 
 extern __u16 bg_color;
 
-
+const float FtC = 0.55;
 
 extern __u8 actual_screen;
 
@@ -78,6 +78,15 @@ void fn_RPM(__u8 data[RPM_DLC]);
 void fn_ACC(__u8 data[ACC_DLC]);
 void fn_GYRO(__u8 data[GYRO_DLC]);
 void fn_Debug(__u8 data[DEBUG_DLC]);
+
+void fn_Group_0(__u8 data[GROUP0_DLC]);
+void fn_Group_1(__u8 data[GROUP1_DLC]);
+void fn_Group_2(__u8 data[GROUP2_DLC]);
+void fn_Group_3(__u8 data[GROUP3_DLC]);
+void fn_Group_7(__u8 data[GROUP7_DLC]);
+void fn_Group_8(__u8 data[GROUP8_DLC]);
+void fn_Group_9(__u8 data[GROUP9_DLC]);
+void fn_Group_15(__u8 data[GROUP15_DLC]);
 
 float readTempC(MAX6675 * Sensor);
 uint16_t floattoU16(float value, uint8_t precision_bits);

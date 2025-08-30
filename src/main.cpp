@@ -1,6 +1,6 @@
 #include <setup.h>
 
-bool debug_mode = 1;
+bool debug_mode = 0;
 
 class Display
 {
@@ -524,9 +524,9 @@ void CAN_setSensor(const __u8 *canData, __u8 canPacketSize, __u32 canId)
     fn_Debug(data);
     break;
 
-  case RPM_ID:
+  /*case RPM_ID:
     fn_RPM(data);
-    break;
+    break;*/
 
   case ACC_ID:
     fn_ACC(data);
@@ -537,6 +537,38 @@ void CAN_setSensor(const __u8 *canData, __u8 canPacketSize, __u32 canId)
     break;
   case TIMESET_ID:
     fn_timeSet(data);
+    break;
+
+  case BASE_ID + GROUP0_ID:
+    fn_Group_0(data);
+    break;
+
+  case BASE_ID + GROUP1_ID:
+    fn_Group_1(data);
+    break;
+
+  case BASE_ID + GROUP2_ID:
+    fn_Group_2(data);
+    break;
+
+  case BASE_ID + GROUP3_ID:
+    fn_Group_3(data);
+    break;
+
+  case BASE_ID + GROUP7_ID:
+    fn_Group_7(data);
+    break;
+
+  case BASE_ID + GROUP8_ID:
+    fn_Group_8(data);
+    break;
+
+  case BASE_ID + GROUP9_ID:
+    fn_Group_9(data);
+    break;
+
+  case BASE_ID + GROUP15_ID:
+    fn_Group_15(data);
     break;
 
   default:
@@ -581,7 +613,7 @@ void fn_Data_02(__u8 data[DATA_02_DLC])
   float Susp_FL = suspSensor(r_Susp_FL);
   float Susp_RR = suspSensor(r_Susp_RR);
   float Susp_RL = suspSensor(r_Susp_RL);
-  float WheelAngle = wheelAngleSensor(r_WheelAngle);
+  String WheelAngle = SteeringWheel.steeringWheelValue(r_WheelAngle);
 
   sensorUpdate(Susp_FR, Susp_Pos_FR_Sensor.index);
   sensorUpdate(Susp_FL, Susp_Pos_FL_Sensor.index);
@@ -611,14 +643,14 @@ void fn_Data_03(__u8 data[DATA_03_DLC])
 
 void fn_Data_04(__u8 data[DATA_04_DLC])
 {
-  __u16 r_Oil_Pressure = ((data[1] & 0x0F) << 8) + data[0];
+  //__u16 r_Oil_Pressure = ((data[1] & 0x0F) << 8) + data[0];
   //__u16 r_Oil_Temp = (data[2] << 4) + ((data[1] >> 4) & 0x0F);
 
-  float Oil_Pressure = (r_Oil_Pressure);
-  //float Oil_Temp = (r_Oil_Temp);
-  
-  sensorUpdate(Oil_Pressure, Oil_Pressure_Sensor.index);
-  //sensorUpdate(Oil_Temp, Oil_Temperature_Sensor.index);
+  //float Oil_Pressure = (r_Oil_Pressure);
+  // float Oil_Temp = (r_Oil_Temp);
+
+  //sensorUpdate(Oil_Pressure, Oil_Pressure_Sensor.index);
+  // sensorUpdate(Oil_Temp, Oil_Temperature_Sensor.index);
 }
 
 void fn_Data_05(__u8 data[DATA_05_DLC])
@@ -647,11 +679,11 @@ void fn_Data_09(__u8 data[DATA_09_DLC])
 {
 }
 
-void fn_RPM(__u8 data[RPM_DLC])
+/*void fn_RPM(__u8 data[RPM_DLC])
 {
   uint16_t RPM = ((data[1] & 0x3F) << 8) | data[0];
   sensorUpdate(RPM, RPM_Sensor.index);
-}
+}*/
 
 void fn_ACC(__u8 data[ACC_DLC])
 {
@@ -778,7 +810,7 @@ void init_twai()
       .alerts_enabled = TWAI_ALERT_NONE,
       .clkout_divider = 0};
 
-  twai_timing_config_t t_config = TWAI_TIMING_CONFIG_1MBITS();
+  twai_timing_config_t t_config = TWAI_TIMING_CONFIG_500KBITS();
   twai_filter_config_t f_config = TWAI_FILTER_CONFIG_ACCEPT_ALL();
 
   // Install TWAI driver
@@ -982,33 +1014,31 @@ void debugScreen()
 {
   displaySetScreen(debugScreen_ID);
 
-  static DisplayObject AccX(0,0);
-  static DisplayObject AccX_Text(0,yPrintln(&AccX));
+  static DisplayObject AccX(0, 0);
+  static DisplayObject AccX_Text(0, yPrintln(&AccX));
 
+  static DisplayObject AccY(tft.width() / 2, 0);
+  static DisplayObject AccY_Text(tft.width() / 2, yPrintln(&AccY));
 
-  static DisplayObject AccY(tft.width()/2,0);
-  static DisplayObject AccY_Text(tft.width()/2,yPrintln(&AccY));
+  static DisplayObject AccZ(tft.width(), 0);
+  static DisplayObject AccZ_Text(tft.width(), yPrintln(&AccZ));
 
-  static DisplayObject AccZ(tft.width(),0);
-  static DisplayObject AccZ_Text(tft.width(),yPrintln(&AccZ));
+  static DisplayObject GyroX(0, tft.height());
+  static DisplayObject GyroX_Text(0, negyPrintln(&GyroX));
 
-  static DisplayObject GyroX(0,tft.height());
-  static DisplayObject GyroX_Text(0,negyPrintln(&GyroX));
+  static DisplayObject GyroY(tft.width() / 2, tft.height());
+  static DisplayObject GyroY_Text(tft.width() / 2, negyPrintln(&GyroY));
 
+  static DisplayObject GyroZ(tft.width(), tft.height());
+  static DisplayObject GyroZ_Text(tft.width(), negyPrintln(&GyroZ));
 
-  static DisplayObject GyroY(tft.width()/2,tft.height());
-  static DisplayObject GyroY_Text(tft.width()/2,negyPrintln(&GyroY));
+  static DisplayObject Amod(tft.width() / 2, tft.height() / 2);
 
-  static DisplayObject GyroZ(tft.width(),tft.height());
-  static DisplayObject GyroZ_Text(tft.width(),negyPrintln(&GyroZ));
+  static DisplayObject wAngle(0, tft.height() / 2);
+  static DisplayObject wAngle_Text(0, yPrintln(&wAngle));
 
-  static DisplayObject Amod(tft.width() / 2,tft.height() / 2);
-
-  static DisplayObject wAngle(0,tft.height() / 2);
-  static DisplayObject wAngle_Text(0,yPrintln(&wAngle));
-
-  static DisplayObject OilPress(tft.width(),tft.height() / 2);
-  static DisplayObject OilPress_Text(tft.width(),yPrintln(&OilPress));
+  static DisplayObject OilPress(tft.width(), tft.height() / 2);
+  static DisplayObject OilPress_Text(tft.width(), yPrintln(&OilPress));
 
   AccX.size = 3;
   AccX_Text.size = 2;
@@ -1035,7 +1065,6 @@ void debugScreen()
 
   OilPress.size = 3;
   OilPress_Text.size = 2;
-
 
   AccX.writeTopLeftText(Accel_X.value);
   AccX_Text.writeTopLeftText("AccX");
@@ -1244,7 +1273,6 @@ void temperatureTask(void *parameter)
     sensorUpdate(FirewallTemp_2, Firewall_Temperature2_Sensor.index);
     uint16_t DT_F2 = floattoU16(FirewallTemp_2, 2);
 
-
     data[0] = DT_FR & 0xFF;
     data[1] = ((DT_FR >> 8) & 0x07) | ((DT_FL & 0x1F) << 3);
     data[2] = ((DT_FL >> 5) & 0x3F) | ((DT_RR & 0x03) << 6);
@@ -1255,7 +1283,7 @@ void temperatureTask(void *parameter)
     data[7] = (DT_F2 >> 3) & 0xFF;
 
     sendCANMessage(TEMP_ID, data, TEMP_DLC);
-    
+
     vTaskDelayUntil(&xLastWakeTime, xFrequency);
   }
 }
@@ -1276,4 +1304,144 @@ uint16_t floattoU16(float value, uint8_t precision_bits)
   retValue = (precision == scale) ? retValue + 1 : retValue;
   retValue = (retValue << precision_bits) + (precision % scale);
   return retValue;
+}
+
+void fn_Group_0(__u8 data[GROUP0_DLC])
+{
+  __u16 r_seconds = word(data[0], data[1]);
+  __u16 r_pw1 = word(data[2], data[3]);
+  __u16 r_pw2 = word(data[4], data[5]);
+  __u16 r_RPM = word(data[6], data[7]);
+
+  float seconds = MS2_Calibration(r_seconds, 1, 1);
+  float pw1 = MS2_Calibration(r_pw1, 1, 1000);
+  float pw2 = MS2_Calibration(r_pw2, 1, 1000);
+  float RPM = MS2_Calibration(r_RPM, 1, 1);
+
+  sensorUpdate(seconds, MS2_Sec.index);
+  sensorUpdate(pw1, MS2_Bank1.index);
+  sensorUpdate(pw2, MS2_Bank2.index);
+  sensorUpdate(RPM, RPM_Sensor.index);
+}
+
+void fn_Group_1(__u8 data[GROUP1_DLC])
+{
+  __s16 r_Fin_Ign_Sprk_Adv = word(data[0], data[1]);
+  __u8 r_BatchFire_Inj_Events = data[2];
+  __u8 r_EngineStatus = data[3];
+  __u8 r_Bank1_AFR_Tgt = data[4];
+  __u8 r_Bank2_AFR_Tgt = data[5];
+
+  float Fin_Ign_Sprk_Adv = MS2_Calibration(r_Fin_Ign_Sprk_Adv, 1, 10);
+  float BatchFire_Inj_Events = MS2_Calibration(r_BatchFire_Inj_Events, 1, 1);
+  float EngineStatus = MS2_Calibration(r_EngineStatus, 1, 1);
+  float Bank1_AFR_Tgt = MS2_Calibration(r_Bank1_AFR_Tgt, 1, 10);
+  float Bank2_AFR_Tgt = MS2_Calibration(r_Bank2_AFR_Tgt, 1, 10);
+
+  sensorUpdate(Fin_Ign_Sprk_Adv, MS2_Fin_Ign_Sprk_Adv.index);
+  sensorUpdate(BatchFire_Inj_Events, MS2_BatchFire_Inj_Events.index);
+  sensorUpdate(EngineStatus, MS2_EngineStatus.index);
+  sensorUpdate(Bank1_AFR_Tgt, MS2_Bank1_AFR_Tgt.index);
+  sensorUpdate(Bank2_AFR_Tgt, MS2_Bank2_AFR_Tgt.index);
+}
+
+void fn_Group_2(__u8 data[GROUP2_DLC])
+{
+
+  __s16 r_Baro = word(data[0], data[1]);
+  __s16 r_MAP = word(data[2], data[3]);
+  __s16 r_MAT = word(data[4], data[5]);
+  __s16 r_CLT = word(data[6], data[7]);
+
+  float Baro = MS2_Calibration(r_Baro, 1, 10);
+  float MAP = MS2_Calibration(r_MAP, 1, 10);
+  float MAT = (MS2_Calibration(r_MAT, 1, 10) - 32) * FtC;
+  float CLT = (MS2_Calibration(r_CLT, 1, 10) - 32) * FtC;
+
+  sensorUpdate(Baro, MS2_Baro_Press.index);
+  sensorUpdate(MAP, MS2_MAP.index);
+  sensorUpdate(MAT, MS2_MAT.index);
+  sensorUpdate(CLT, MS2_CLT.index);
+}
+
+void fn_Group_3(__u8 data[GROUP3_DLC])
+{
+  __s16 r_TPS = word(data[0], data[1]);
+  __s16 r_Voltage = word(data[2], data[3]);
+  __s16 r_AFR1 = word(data[4], data[5]);
+  __s16 r_AFR2 = word(data[6], data[7]);
+
+  float TPS = MS2_Calibration(r_TPS, 1, 10);
+  float Voltage = MS2_Calibration(r_Voltage, 1, 10);
+  float AFR1 = MS2_Calibration(r_AFR1, 1, 10);
+  float AFR2 = MS2_Calibration(r_AFR2, 1, 10);
+
+  sensorUpdate(TPS, MS2_TPS.index);
+  sensorUpdate(Voltage, MS2_Voltage.index);
+  sensorUpdate(AFR1, MS2_AFR1.index);
+  sensorUpdate(AFR2, MS2_AFR2.index);
+}
+
+void fn_Group_7(__u8 data[GROUP7_DLC])
+{
+  __s16 r_cold_Adv = word(data[0], data[1]);
+  __s16 r_TPS_rate = word(data[2], data[3]);
+  __s16 r_MAP_rate = word(data[4], data[5]);
+  __s16 r_RPM_rate = word(data[6], data[7]);
+
+  float cold_Adv = MS2_Calibration(r_cold_Adv, 1, 10);
+  float TPS_rate = MS2_Calibration(r_TPS_rate, 1, 10);
+  float MAP_rate = MS2_Calibration(r_MAP_rate, 1, 1);
+  float RPM_rate = MS2_Calibration(r_RPM_rate, 10, 1);
+
+  sensorUpdate(cold_Adv, MS2_Cold_Adv.index);
+  sensorUpdate(TPS_rate, MS2_TPS_Rate.index);
+  sensorUpdate(MAP_rate, MS2_MAP_Rate.index);
+  sensorUpdate(RPM_rate, MS2_RPM_Rate.index);
+}
+
+void fn_Group_8(__u8 data[GROUP8_DLC])
+{
+  __s16 r_MAF_Load = word(data[0], data[1]);
+  __s16 r_Fuel_Load = word(data[2], data[3]);
+  __s16 r_Fuel_Correction = word(data[4], data[5]);
+  __s16 r_MAF = word(data[6], data[7]);
+
+  float MAF_Load = MS2_Calibration(r_MAF_Load, 1, 10);
+  float Fuel_Load = MS2_Calibration(r_Fuel_Load, 1, 10);
+  float Fuel_Correction = MS2_Calibration(r_Fuel_Correction, 1, 10);
+  float MAF = MS2_Calibration(r_MAF, 1, 100);
+
+  sensorUpdate(MAF_Load, MS2_MAF_Load.index);
+  sensorUpdate(Fuel_Load, MS2_Fuel_Load.index);
+  sensorUpdate(Fuel_Correction, MS2_Fuel_Correction.index);
+  sensorUpdate(MAF, MS2_MAF.index);
+}
+
+void fn_Group_9(__u8 data[GROUP9_DLC])
+{
+  __s16 r_O2_V1 = word(data[0], data[1]);
+  __s16 r_O2_V2 = word(data[2], data[3]);
+  __u16 r_Main_Dwell = word(data[4], data[5]);
+  __u16 r_Trailing_Dwell = word(data[6], data[7]);
+
+  float O2_V1 = MS2_Calibration(r_O2_V1, 1, 100);
+  float O2_V2 = MS2_Calibration(r_O2_V2, 1, 100);
+  float Main_Dwell = MS2_Calibration(r_Main_Dwell, 1, 10);
+  float Trailing_Dwell = MS2_Calibration(r_Trailing_Dwell, 1, 10);
+
+  sensorUpdate(O2_V1, MS2_O2_V1.index);
+  sensorUpdate(O2_V2, MS2_O2_V2.index);
+  sensorUpdate(Main_Dwell, MS2_Main_Ign_Dwell.index);
+  sensorUpdate(Trailing_Dwell, MS2_Trailing_Ign_Dwell.index);
+}
+
+void fn_Group_15(__u8 data[GROUP15_DLC])
+{
+  __s16 r_OilPress = word(data[0], data[1]);
+  //__s16 r_O2_V2 = word(data[2],data[3]);
+
+  float OilPress = MS2_Calibration(r_OilPress, 1, 10);
+
+  sensorUpdate(OilPress, Oil_Pressure_Sensor.index);
 }

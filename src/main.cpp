@@ -1269,7 +1269,7 @@ void temperatureTask(void *parameter)
     uint16_t DT_F1 = floattoU16(FirewallTemp_1, 2);
 
     // Ler sensor 6
-    float FirewallTemp_2 = readTempC(&s_FirewallTemp2);
+    float FirewallTemp_2 = 1.58 * readTempC(&s_FirewallTemp2) - 40.33;
     sensorUpdate(FirewallTemp_2, Firewall_Temperature2_Sensor.index);
     uint16_t DT_F2 = floattoU16(FirewallTemp_2, 2);
 

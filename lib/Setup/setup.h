@@ -2,8 +2,6 @@
 #define FORMULA_SETUP_H
 
 
-
-
 #include <Arduino.h>
 #include <TFT_eSPI.h>
 #include <SPI.h>
@@ -72,6 +70,7 @@ void fn_Data_06(__u8 data[DATA_06_DLC]);
 void fn_Data_07(__u8 data[DATA_07_DLC]);
 void fn_Data_08(__u8 data[DATA_08_DLC]);
 void fn_Data_09(__u8 data[DATA_09_DLC]);
+void fn_Data_10(__u8 data[DATA_10_DLC]);
 void fn_Buffer_Ack(__u8 data[BUFFER_ACK_DLC]);
 void fn_timeSet(__u8 data[TIMESET_DLC]);
 void fn_RPM(__u8 data[RPM_DLC]);

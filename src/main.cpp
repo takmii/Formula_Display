@@ -1,6 +1,6 @@
 #include <setup.h>
 
-bool debug_mode = 0;
+bool debug_mode = 1;
 
 class Display
 {
@@ -516,6 +516,10 @@ void CAN_setSensor(const __u8 *canData, __u8 canPacketSize, __u32 canId)
     fn_Data_09(data);
     break;
 
+  case DATA_10_ID:
+    fn_Data_10(data);
+    break;
+
   case BUFFER_ACK_ID:
     fn_Buffer_Ack(data);
     break;
@@ -572,9 +576,9 @@ void CAN_setSensor(const __u8 *canData, __u8 canPacketSize, __u32 canId)
     break;
 
   default:
-    Serial.print("ID: ");
-    Serial.println(canId);
-    Serial.println("Not Recognized");
+    //Serial.print("ID: ");
+    //Serial.println(canId);
+    //Serial.println("Not Recognized");
     break;
   }
 }
@@ -677,6 +681,28 @@ void fn_Data_08(__u8 data[DATA_08_DLC])
 
 void fn_Data_09(__u8 data[DATA_09_DLC])
 {
+}
+
+void fn_Data_10(__u8 data[DATA_10_DLC])
+{
+  static const double a = 0.00130654;
+  static const double b = 0.000259714;
+  static const double c = -1.08959E-08;
+
+  __u16 r_MAP1=((data[1] & 0x0F) << 8) + data[0];
+  __u16 r_MAP2=(data[2] << 4) + ((data[1] >> 4) & 0x0F);
+  __u16 r_MAF=((data[4] & 0x0F) << 8) + data[3];
+  __u16 r_OilTemp=(data[5] << 4) + ((data[4] >> 4) & 0x0F);
+
+  float MAP1 = mapSensor(r_MAP1);
+  float MAP2 = mapSensor(r_MAP2);
+  float MAF = mafSensor(r_MAF);
+  float OilTemp = tempOilSensor(r_OilTemp,a,b,c);
+
+  sensorUpdate(MAP1,MAP1_Sensor.index);
+  sensorUpdate(MAP2,MAP2_Sensor.index);
+  sensorUpdate(MAF,MAF_Sensor.index);
+  sensorUpdate(OilTemp,Oil_Temperature_Sensor.index);
 }
 
 /*void fn_RPM(__u8 data[RPM_DLC])
@@ -1014,7 +1040,7 @@ void debugScreen()
 {
   displaySetScreen(debugScreen_ID);
 
-  static DisplayObject AccX(0, 0);
+  /*static DisplayObject AccX(0, 0);
   static DisplayObject AccX_Text(0, yPrintln(&AccX));
 
   static DisplayObject AccY(tft.width() / 2, 0);
@@ -1090,7 +1116,9 @@ void debugScreen()
   OilPress.writeRightText(Oil_Pressure_Sensor.value);
   OilPress_Text.writeRightText("Oil Press");
 
-  Amod.writeCenterText(Accel.value);
+  Amod.writeCenterText(Accel.value);*/
+
+
   /*static DisplayObject Temp_BrakeFL(0, 0);
   static DisplayObject Temp_BrakeFL_Text(0, yPrintln(&Temp_BrakeFL));
 
@@ -1144,6 +1172,53 @@ void debugScreen()
 
   Firewall_Temp2.writeRightText(Firewall_Temperature2_Sensor.value + "C");
   Firewall_Temp2_Text.writeRightText("Firewall 2");*/
+
+  static DisplayObject MAP1(0, 0);
+  static DisplayObject MAP1_Text(0, yPrintln(&MAP1));
+
+  static DisplayObject MAP2(tft.width(), 0);
+  static DisplayObject MAP2_Text(tft.width(), yPrintln(&MAP2));
+
+  static DisplayObject MAF(0, tft.height());
+  static DisplayObject MAF_Text(0, negyPrintln(&MAF));
+
+  static DisplayObject Oil_Temp(tft.width(), tft.height());
+  static DisplayObject Oil_Temp_Text(tft.width(), negyPrintln(&Oil_Temp));
+
+  static DisplayObject wAngle(tft.width()/2, tft.height() / 2);
+  static DisplayObject wAngle_Text(tft.width()/2, yPrintln(&wAngle));
+
+  MAP1.size = 3;
+  MAP1_Text.size = 2;
+
+  MAP2.size = 3;
+  MAP2_Text.size = 2;
+
+  MAF.size = 3;
+  MAF_Text.size = 2;
+
+  Oil_Temp.size = 3;
+  Oil_Temp_Text.size = 2;
+
+  wAngle.size = 3;
+  wAngle_Text.size = 2;
+
+
+  MAP1.writeTopLeftText(MAP1_Sensor.value);
+  MAP1_Text.writeTopLeftText("MAP 1");
+
+  MAP2.writeTopRightText(MAP2_Sensor.value);
+  MAP2_Text.writeTopRightText("MAP 2");
+
+  MAF.writeBottomLeftText(MAF_Sensor.value);
+  MAF_Text.writeBottomLeftText("MAF");
+
+  Oil_Temp.writeBottomRightText(Oil_Temperature_Sensor.value + "C");
+  Oil_Temp_Text.writeBottomRightText("Oil Temp");
+
+  wAngle.writeCenterText(SteerWheel_Pos_Sensor.value);
+  wAngle_Text.writeCenterText("Wheel");
+
 }
 
 void setupScreen()

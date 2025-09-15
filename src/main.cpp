@@ -1,6 +1,6 @@
 #include <setup.h>
 
-bool debug_mode = 1;
+bool debug_mode = 0;
 
 class Display
 {
@@ -985,13 +985,21 @@ void mainScreen()
 {
   displaySetScreen(mainScreen_ID);
 
-  static DisplayObject Gear(tft.width() / 2, tft.height() / 2);
-  Gear.size = 7;
-  Gear.writeCenterText(Gear_Pos_Sens.value);
+  //static DisplayObject Gear(tft.width() / 2, tft.height() / 2);
+  //Gear.size = 7;
+  //Gear.writeCenterText(Gear_Pos_Sens.value);
 
-  static DisplayObject Gear_Text(tft.width() / 2, yPrintln(&Gear));
-  Gear_Text.size = 2;
-  Gear_Text.writeTopCenterText("GEAR");
+  //static DisplayObject Gear_Text(tft.width() / 2, yPrintln(&Gear));
+  //Gear_Text.size = 2;
+  //Gear_Text.writeTopCenterText("GEAR");
+
+  static DisplayObject sWheel(tft.width() / 2, tft.height() / 2);
+  sWheel.size = 3;
+  sWheel.writeCenterText(SteerWheel_Pos_Sensor.value);
+
+  static DisplayObject sWheel_Text(tft.width() / 2, yPrintln(&sWheel));
+  sWheel_Text.size = 2;
+  sWheel_Text.writeTopCenterText("St_Wheel");
 
   static DisplayObject RPM(0, 0);
   RPM.writeTopLeftText(RPM_Sensor.value);
@@ -1013,6 +1021,30 @@ void mainScreen()
 
   static DisplayObject Line2(0, tft.height() - 60);
   Line2.drawXline(tft.width());
+
+  static DisplayObject MAP1(0,tft.height());
+  MAP1.size=3;
+  MAP1.writeBottomLeftText(MAP1_Sensor.value);
+
+  static DisplayObject MAP1_text(0,negyPrintln(&MAP1));
+  MAP1_text.size=2;
+  MAP1_text.writeBottomLeftText("MAP 1");
+
+  static DisplayObject MAF(tft.width()/2,tft.height());
+  MAF.size=3;
+  MAF.writeBottomCenterText(MAF_Sensor.value);
+
+  static DisplayObject MAF_text(tft.width()/2,negyPrintln(&MAF));
+  MAF_text.size=2;
+  MAF_text.writeBottomCenterText("MAF");
+
+  static DisplayObject tOil(tft.width(),tft.height());
+  tOil.size=3;
+  tOil.writeBottomRightText(Oil_Temperature_Sensor.value);
+
+  static DisplayObject tOil_text(tft.width(),negyPrintln(&MAF));
+  tOil_text.size=2;
+  tOil_text.writeBottomRightText("Oil Temp");
 }
 
 void screen2()
@@ -1119,7 +1151,7 @@ void debugScreen()
   Amod.writeCenterText(Accel.value);*/
 
 
-  /*static DisplayObject Temp_BrakeFL(0, 0);
+  static DisplayObject Temp_BrakeFL(0, 0);
   static DisplayObject Temp_BrakeFL_Text(0, yPrintln(&Temp_BrakeFL));
 
   static DisplayObject Temp_BrakeFR(tft.width(), 0);
@@ -1171,9 +1203,9 @@ void debugScreen()
   Firewall_Temp1_Text.writeLeftText("Firewall 1");
 
   Firewall_Temp2.writeRightText(Firewall_Temperature2_Sensor.value + "C");
-  Firewall_Temp2_Text.writeRightText("Firewall 2");*/
+  Firewall_Temp2_Text.writeRightText("Firewall 2");
 
-  static DisplayObject MAP1(0, 0);
+  /*static DisplayObject MAP1(0, 0);
   static DisplayObject MAP1_Text(0, yPrintln(&MAP1));
 
   static DisplayObject MAP2(tft.width(), 0);
@@ -1217,7 +1249,7 @@ void debugScreen()
   Oil_Temp_Text.writeBottomRightText("Oil Temp");
 
   wAngle.writeCenterText(SteerWheel_Pos_Sensor.value);
-  wAngle_Text.writeCenterText("Wheel");
+  wAngle_Text.writeCenterText("Wheel");*/
 
 }
 
@@ -1306,7 +1338,7 @@ uint16_t negyPrintln(const DisplayObject *obj)
   }
   if (obj->datum == BC_DATUM || obj->datum == BL_DATUM || obj->datum == BR_DATUM)
   {
-    size = 1;
+    size = size;
   }
   return (uint16_t)(obj->pos_y - (7 + (size * font_size_const)));
 }
@@ -1383,15 +1415,16 @@ uint16_t floattoU16(float value, uint8_t precision_bits)
 
 void fn_Group_0(__u8 data[GROUP0_DLC])
 {
-  __u16 r_seconds = word(data[0], data[1]);
-  __u16 r_pw1 = word(data[2], data[3]);
-  __u16 r_pw2 = word(data[4], data[5]);
-  __u16 r_RPM = word(data[6], data[7]);
+  __u16 r_seconds = word(data[0],data[1]);
+  __u16 r_pw1 = word(data[2],data[3]);
+  __u16 r_pw2 = word(data[4],data[5]);
+  __u16 r_RPM = word(data[6],data[7]);
 
-  float seconds = MS2_Calibration(r_seconds, 1, 1);
-  float pw1 = MS2_Calibration(r_pw1, 1, 1000);
-  float pw2 = MS2_Calibration(r_pw2, 1, 1000);
-  float RPM = MS2_Calibration(r_RPM, 1, 1);
+  __u16 seconds = MS2_U16_Calibration(r_seconds,MS2_1_cal,MS2_1_cal);
+  float pw1 = MS2_Float_Calibration(r_pw1,MS2_1_cal,MS2_1000_cal);
+  float pw2 = MS2_Float_Calibration(r_pw2,MS2_1_cal,MS2_1000_cal);
+  __u16 RPM = MS2_U16_Calibration(r_RPM,MS2_1_cal,MS2_1_cal);
+  
 
   sensorUpdate(seconds, MS2_Sec.index);
   sensorUpdate(pw1, MS2_Bank1.index);
@@ -1401,37 +1434,40 @@ void fn_Group_0(__u8 data[GROUP0_DLC])
 
 void fn_Group_1(__u8 data[GROUP1_DLC])
 {
-  __s16 r_Fin_Ign_Sprk_Adv = word(data[0], data[1]);
+  __s16 r_Fin_Ign_Sprk_Adv = word(data[0],data[1]);
   __u8 r_BatchFire_Inj_Events = data[2];
   __u8 r_EngineStatus = data[3];
   __u8 r_Bank1_AFR_Tgt = data[4];
   __u8 r_Bank2_AFR_Tgt = data[5];
 
-  float Fin_Ign_Sprk_Adv = MS2_Calibration(r_Fin_Ign_Sprk_Adv, 1, 10);
-  float BatchFire_Inj_Events = MS2_Calibration(r_BatchFire_Inj_Events, 1, 1);
-  float EngineStatus = MS2_Calibration(r_EngineStatus, 1, 1);
-  float Bank1_AFR_Tgt = MS2_Calibration(r_Bank1_AFR_Tgt, 1, 10);
-  float Bank2_AFR_Tgt = MS2_Calibration(r_Bank2_AFR_Tgt, 1, 10);
+float Fin_Ign_Sprk_Adv = MS2_Float_Calibration(r_Fin_Ign_Sprk_Adv,MS2_1_cal,MS2_10_cal);
+__u8 BatchFire_Inj_Events = MS2_U8_Calibration(r_BatchFire_Inj_Events,MS2_1_cal,MS2_1_cal);
+__u8 EngineStatus = MS2_U8_Calibration(r_EngineStatus,MS2_1_cal,MS2_1_cal);
+float Bank1_AFR_Tgt = MS2_Float_Calibration(r_Bank1_AFR_Tgt,MS2_1_cal,MS2_10_cal);
+float Bank2_AFR_Tgt = MS2_Float_Calibration(r_Bank2_AFR_Tgt,MS2_1_cal,MS2_10_cal);
 
-  sensorUpdate(Fin_Ign_Sprk_Adv, MS2_Fin_Ign_Sprk_Adv.index);
-  sensorUpdate(BatchFire_Inj_Events, MS2_BatchFire_Inj_Events.index);
-  sensorUpdate(EngineStatus, MS2_EngineStatus.index);
-  sensorUpdate(Bank1_AFR_Tgt, MS2_Bank1_AFR_Tgt.index);
-  sensorUpdate(Bank2_AFR_Tgt, MS2_Bank2_AFR_Tgt.index);
+sensorUpdate(Fin_Ign_Sprk_Adv, MS2_Fin_Ign_Sprk_Adv.index);
+sensorUpdate(BatchFire_Inj_Events, MS2_BatchFire_Inj_Events.index);
+sensorUpdate(EngineStatus, MS2_EngineStatus.index);
+sensorUpdate(Bank1_AFR_Tgt, MS2_Bank1_AFR_Tgt.index);
+sensorUpdate(Bank2_AFR_Tgt, MS2_Bank2_AFR_Tgt.index);
+
 }
 
 void fn_Group_2(__u8 data[GROUP2_DLC])
 {
+  
+  __s16 r_Baro = word(data[0],data[1]);
+  __s16 r_MAP = word(data[2],data[3]);
+  __s16 r_MAT = word(data[4],data[5]);
+  __s16 r_CLT = word(data[6],data[7]);
 
-  __s16 r_Baro = word(data[0], data[1]);
-  __s16 r_MAP = word(data[2], data[3]);
-  __s16 r_MAT = word(data[4], data[5]);
-  __s16 r_CLT = word(data[6], data[7]);
 
-  float Baro = MS2_Calibration(r_Baro, 1, 10);
-  float MAP = MS2_Calibration(r_MAP, 1, 10);
-  float MAT = (MS2_Calibration(r_MAT, 1, 10) - 32) * FtC;
-  float CLT = (MS2_Calibration(r_CLT, 1, 10) - 32) * FtC;
+  float Baro = MS2_Float_Calibration(r_Baro,MS2_1_cal,MS2_10_cal);
+  float MAP = MS2_Float_Calibration(r_MAP,MS2_1_cal,MS2_10_cal);
+  float MAT = (MS2_Float_Calibration(r_MAT,MS2_1_cal,MS2_10_cal)-32)*FtC;
+  float CLT = (MS2_Float_Calibration(r_CLT,MS2_1_cal,MS2_10_cal)-32)*FtC;
+  
 
   sensorUpdate(Baro, MS2_Baro_Press.index);
   sensorUpdate(MAP, MS2_MAP.index);
@@ -1441,15 +1477,17 @@ void fn_Group_2(__u8 data[GROUP2_DLC])
 
 void fn_Group_3(__u8 data[GROUP3_DLC])
 {
-  __s16 r_TPS = word(data[0], data[1]);
-  __s16 r_Voltage = word(data[2], data[3]);
-  __s16 r_AFR1 = word(data[4], data[5]);
-  __s16 r_AFR2 = word(data[6], data[7]);
+  __s16 r_TPS = word(data[0],data[1]);
+  __s16 r_Voltage = word(data[2],data[3]);
+  __s16 r_AFR1 = word(data[4],data[5]);
+  __s16 r_AFR2 = word(data[6],data[7]);
 
-  float TPS = MS2_Calibration(r_TPS, 1, 10);
-  float Voltage = MS2_Calibration(r_Voltage, 1, 10);
-  float AFR1 = MS2_Calibration(r_AFR1, 1, 10);
-  float AFR2 = MS2_Calibration(r_AFR2, 1, 10);
+
+  __s16 TPS = MS2_S16_Calibration(r_TPS,MS2_1_cal,MS2_10_cal);
+  float Voltage = MS2_Float_Calibration(r_Voltage,MS2_1_cal,MS2_10_cal);
+  float AFR1 = MS2_Float_Calibration(r_AFR1,MS2_1_cal,MS2_10_cal);
+  float AFR2 = MS2_Float_Calibration(r_AFR2,MS2_1_cal,MS2_10_cal);
+  
 
   sensorUpdate(TPS, MS2_TPS.index);
   sensorUpdate(Voltage, MS2_Voltage.index);
@@ -1459,15 +1497,15 @@ void fn_Group_3(__u8 data[GROUP3_DLC])
 
 void fn_Group_7(__u8 data[GROUP7_DLC])
 {
-  __s16 r_cold_Adv = word(data[0], data[1]);
-  __s16 r_TPS_rate = word(data[2], data[3]);
-  __s16 r_MAP_rate = word(data[4], data[5]);
-  __s16 r_RPM_rate = word(data[6], data[7]);
+  __s16 r_cold_Adv = word(data[0],data[1]);
+  __s16 r_TPS_rate = word(data[2],data[3]);
+  __s16 r_MAP_rate = word(data[4],data[5]);
+  __s16 r_RPM_rate = word(data[6],data[7]);
 
-  float cold_Adv = MS2_Calibration(r_cold_Adv, 1, 10);
-  float TPS_rate = MS2_Calibration(r_TPS_rate, 1, 10);
-  float MAP_rate = MS2_Calibration(r_MAP_rate, 1, 1);
-  float RPM_rate = MS2_Calibration(r_RPM_rate, 10, 1);
+  float cold_Adv = MS2_Float_Calibration(r_cold_Adv,MS2_1_cal,MS2_10_cal);
+  float TPS_rate = MS2_Float_Calibration(r_TPS_rate,MS2_1_cal,MS2_10_cal);
+  float MAP_rate = MS2_Float_Calibration(r_MAP_rate,MS2_1_cal,MS2_1_cal);
+  __s16 RPM_rate = MS2_S16_Calibration(r_RPM_rate,MS2_10_cal,MS2_1_cal);
 
   sensorUpdate(cold_Adv, MS2_Cold_Adv.index);
   sensorUpdate(TPS_rate, MS2_TPS_Rate.index);
@@ -1477,15 +1515,15 @@ void fn_Group_7(__u8 data[GROUP7_DLC])
 
 void fn_Group_8(__u8 data[GROUP8_DLC])
 {
-  __s16 r_MAF_Load = word(data[0], data[1]);
-  __s16 r_Fuel_Load = word(data[2], data[3]);
-  __s16 r_Fuel_Correction = word(data[4], data[5]);
-  __s16 r_MAF = word(data[6], data[7]);
+  __s16 r_MAF_Load = word(data[0],data[1]);
+  __s16 r_Fuel_Load = word(data[2],data[3]);
+  __s16 r_Fuel_Correction = word(data[4],data[5]);
+  __s16 r_MAF = word(data[6],data[7]);
 
-  float MAF_Load = MS2_Calibration(r_MAF_Load, 1, 10);
-  float Fuel_Load = MS2_Calibration(r_Fuel_Load, 1, 10);
-  float Fuel_Correction = MS2_Calibration(r_Fuel_Correction, 1, 10);
-  float MAF = MS2_Calibration(r_MAF, 1, 100);
+  float MAF_Load = MS2_Float_Calibration(r_MAF_Load,MS2_1_cal,MS2_10_cal);
+  float Fuel_Load = MS2_Float_Calibration(r_Fuel_Load,MS2_1_cal,MS2_10_cal);
+  float Fuel_Correction = MS2_Float_Calibration(r_Fuel_Correction,MS2_1_cal,MS2_10_cal);
+  float MAF = MS2_Float_Calibration(r_MAF,MS2_1_cal,MS2_100_cal);
 
   sensorUpdate(MAF_Load, MS2_MAF_Load.index);
   sensorUpdate(Fuel_Load, MS2_Fuel_Load.index);
@@ -1495,15 +1533,15 @@ void fn_Group_8(__u8 data[GROUP8_DLC])
 
 void fn_Group_9(__u8 data[GROUP9_DLC])
 {
-  __s16 r_O2_V1 = word(data[0], data[1]);
-  __s16 r_O2_V2 = word(data[2], data[3]);
-  __u16 r_Main_Dwell = word(data[4], data[5]);
-  __u16 r_Trailing_Dwell = word(data[6], data[7]);
+  __s16 r_O2_V1= word(data[0],data[1]);
+  __s16 r_O2_V2 = word(data[2],data[3]);
+  __u16 r_Main_Dwell = word(data[4],data[5]);
+  __u16 r_Trailing_Dwell = word(data[6],data[7]);
 
-  float O2_V1 = MS2_Calibration(r_O2_V1, 1, 100);
-  float O2_V2 = MS2_Calibration(r_O2_V2, 1, 100);
-  float Main_Dwell = MS2_Calibration(r_Main_Dwell, 1, 10);
-  float Trailing_Dwell = MS2_Calibration(r_Trailing_Dwell, 1, 10);
+  float O2_V1 = MS2_Float_Calibration(r_O2_V1,MS2_1_cal,MS2_100_cal);
+  float O2_V2 = MS2_Float_Calibration(r_O2_V2,MS2_1_cal,MS2_100_cal);
+  float Main_Dwell = MS2_Float_Calibration(r_Main_Dwell,MS2_1_cal,MS2_10_cal);
+  float Trailing_Dwell = MS2_Float_Calibration(r_Trailing_Dwell,MS2_1_cal,MS2_10_cal);
 
   sensorUpdate(O2_V1, MS2_O2_V1.index);
   sensorUpdate(O2_V2, MS2_O2_V2.index);
@@ -1513,10 +1551,10 @@ void fn_Group_9(__u8 data[GROUP9_DLC])
 
 void fn_Group_15(__u8 data[GROUP15_DLC])
 {
-  __s16 r_OilPress = word(data[0], data[1]);
+  __s16 r_OilPress= word(data[0],data[1]);
   //__s16 r_O2_V2 = word(data[2],data[3]);
 
-  float OilPress = MS2_Calibration(r_OilPress, 1, 10);
+  float OilPress = MS2_Float_Calibration(r_OilPress,MS2_1_cal,MS2_10_cal);
 
   sensorUpdate(OilPress, Oil_Pressure_Sensor.index);
 }

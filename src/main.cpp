@@ -1376,7 +1376,7 @@ void temperatureTask(void *parameter)
     uint16_t DT_F1 = floattoU16(FirewallTemp_1, 2);
 
     // Ler sensor 6
-    float FirewallTemp_2 = readTempC(&s_FirewallTemp2);
+    float FirewallTemp_2 = 1.58 * readTempC(&s_FirewallTemp2) - 40.33;
     sensorUpdate(FirewallTemp_2, Firewall_Temperature2_Sensor.index);
     uint16_t DT_F2 = floattoU16(FirewallTemp_2, 2);
 
@@ -1435,6 +1435,7 @@ void fn_Group_0(__u8 data[GROUP0_DLC])
 void fn_Group_1(__u8 data[GROUP1_DLC])
 {
   __s16 r_Fin_Ign_Sprk_Adv = word(data[0],data[1]);
+  __s16 r_Fin_Ign_Sprk_Adv = word(data[0],data[1]);
   __u8 r_BatchFire_Inj_Events = data[2];
   __u8 r_EngineStatus = data[3];
   __u8 r_Bank1_AFR_Tgt = data[4];
@@ -1452,10 +1453,22 @@ sensorUpdate(EngineStatus, MS2_EngineStatus.index);
 sensorUpdate(Bank1_AFR_Tgt, MS2_Bank1_AFR_Tgt.index);
 sensorUpdate(Bank2_AFR_Tgt, MS2_Bank2_AFR_Tgt.index);
 
+sensorUpdate(Fin_Ign_Sprk_Adv, MS2_Fin_Ign_Sprk_Adv.index);
+sensorUpdate(BatchFire_Inj_Events, MS2_BatchFire_Inj_Events.index);
+sensorUpdate(EngineStatus, MS2_EngineStatus.index);
+sensorUpdate(Bank1_AFR_Tgt, MS2_Bank1_AFR_Tgt.index);
+sensorUpdate(Bank2_AFR_Tgt, MS2_Bank2_AFR_Tgt.index);
+
 }
 
 void fn_Group_2(__u8 data[GROUP2_DLC])
 {
+  
+  __s16 r_Baro = word(data[0],data[1]);
+  __s16 r_MAP = word(data[2],data[3]);
+  __s16 r_MAT = word(data[4],data[5]);
+  __s16 r_CLT = word(data[6],data[7]);
+
   
   __s16 r_Baro = word(data[0],data[1]);
   __s16 r_MAP = word(data[2],data[3]);
@@ -1482,6 +1495,11 @@ void fn_Group_3(__u8 data[GROUP3_DLC])
   __s16 r_AFR1 = word(data[4],data[5]);
   __s16 r_AFR2 = word(data[6],data[7]);
 
+  __s16 r_TPS = word(data[0],data[1]);
+  __s16 r_Voltage = word(data[2],data[3]);
+  __s16 r_AFR1 = word(data[4],data[5]);
+  __s16 r_AFR2 = word(data[6],data[7]);
+
 
   __s16 TPS = MS2_S16_Calibration(r_TPS,MS2_1_cal,MS2_10_cal);
   float Voltage = MS2_Float_Calibration(r_Voltage,MS2_1_cal,MS2_10_cal);
@@ -1497,6 +1515,10 @@ void fn_Group_3(__u8 data[GROUP3_DLC])
 
 void fn_Group_7(__u8 data[GROUP7_DLC])
 {
+  __s16 r_cold_Adv = word(data[0],data[1]);
+  __s16 r_TPS_rate = word(data[2],data[3]);
+  __s16 r_MAP_rate = word(data[4],data[5]);
+  __s16 r_RPM_rate = word(data[6],data[7]);
   __s16 r_cold_Adv = word(data[0],data[1]);
   __s16 r_TPS_rate = word(data[2],data[3]);
   __s16 r_MAP_rate = word(data[4],data[5]);
@@ -1519,6 +1541,10 @@ void fn_Group_8(__u8 data[GROUP8_DLC])
   __s16 r_Fuel_Load = word(data[2],data[3]);
   __s16 r_Fuel_Correction = word(data[4],data[5]);
   __s16 r_MAF = word(data[6],data[7]);
+  __s16 r_MAF_Load = word(data[0],data[1]);
+  __s16 r_Fuel_Load = word(data[2],data[3]);
+  __s16 r_Fuel_Correction = word(data[4],data[5]);
+  __s16 r_MAF = word(data[6],data[7]);
 
   float MAF_Load = MS2_Float_Calibration(r_MAF_Load,MS2_1_cal,MS2_10_cal);
   float Fuel_Load = MS2_Float_Calibration(r_Fuel_Load,MS2_1_cal,MS2_10_cal);
@@ -1537,6 +1563,10 @@ void fn_Group_9(__u8 data[GROUP9_DLC])
   __s16 r_O2_V2 = word(data[2],data[3]);
   __u16 r_Main_Dwell = word(data[4],data[5]);
   __u16 r_Trailing_Dwell = word(data[6],data[7]);
+  __s16 r_O2_V1= word(data[0],data[1]);
+  __s16 r_O2_V2 = word(data[2],data[3]);
+  __u16 r_Main_Dwell = word(data[4],data[5]);
+  __u16 r_Trailing_Dwell = word(data[6],data[7]);
 
   float O2_V1 = MS2_Float_Calibration(r_O2_V1,MS2_1_cal,MS2_100_cal);
   float O2_V2 = MS2_Float_Calibration(r_O2_V2,MS2_1_cal,MS2_100_cal);
@@ -1551,6 +1581,7 @@ void fn_Group_9(__u8 data[GROUP9_DLC])
 
 void fn_Group_15(__u8 data[GROUP15_DLC])
 {
+  __s16 r_OilPress= word(data[0],data[1]);
   __s16 r_OilPress= word(data[0],data[1]);
   //__s16 r_O2_V2 = word(data[2],data[3]);
 

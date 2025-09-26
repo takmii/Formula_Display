@@ -132,56 +132,40 @@ signed char MS2_S8_Calibration(unsigned short value, unsigned short m, unsigned 
 class SW_Settings
 {
 private:
-  uint8_t Region_Number;
   signed short dValueDir;
   signed short dValueEsq;
   double center;
-  signed short* r_Region;
-  double* c_Region;
+  double oldvalues[3] = {0, 0, 0};
+  double oldconv[3] = {0, 0, 0};
   unsigned char regions[3] = {0, 0, 0};
+  bool hypZone = 1;
 
 public:
   unsigned short mValueEsq;
   unsigned short mValueDir;
 
-  SW_Settings(double centerDeg, uint16_t mValEsq, uint16_t mValDir, uint8_t Reg_Number)
-      : mValueEsq(2*mValEsq), mValueDir(2*mValDir), center(centerDeg), Region_Number(Reg_Number)
+  SW_Settings(double centerDeg, uint16_t mValEsq, uint16_t mValDir)
+      : mValueEsq(2*mValEsq), mValueDir(2*mValDir), center(centerDeg)
   {
     dValueEsq = -static_cast<signed short>(360 - mValueDir); // Logica invertida
     dValueDir = static_cast<signed short>(360 - mValueEsq);
-
-    double stepEsq = static_cast<double>(mValueEsq) / Region_Number;
-    double stepDir = static_cast<double>(mValueDir) / Region_Number;
-
-    r_Region = new signed short[(2*Region_Number)+1];
-    r_Region[Region_Number] = 0;
-
-    c_Region = new double[(2*Region_Number)+1];
-    c_Region[Region_Number] = 0;
-
-    for (uint8_t i=0; i<Region_Number;i++){
-      r_Region[i]= static_cast<signed short>(-static_cast<signed short>(mValueEsq) + i * stepEsq);
-      c_Region[i] = fmodf((center + r_Region[i]), 360);
-    }
-    for(uint8_t i=0; i<Region_Number;i++){
-      r_Region[i+1+Region_Number]=static_cast<signed short>(i * stepEsq);
-      c_Region[i+1+Region_Number] = fmodf((center + r_Region[i]), 360);
-    }
   }
-  unsigned char getRegion(double value,bool hypothetical)
+    unsigned char getRegion(double value)
   {
-    if (hypothetical&&(value> dValueEsq||value < dValueDir)){
-      for(uint8_t i=0;i<2*Region_Number;i++){
-        if (value>=c_Region[i] && value<=c_Region[i+1]){
-          return i;
-        }
-      }
+    unsigned char region;
+    if (value > dValueEsq && value < dValueDir)
+    {
+      region = 1;
     }
-    else if (hypothetical&&(value<= dValueEsq||value >= dValueDir)){
-      for(uint8_t i=0;i<2*Region_Number;i++){
-        
-      }
+    else if (value <= dValueEsq)
+    {
+      region = 0;
     }
+    else
+    {
+      region = 2;
+    }
+    return region;
   }
 
   unsigned char getOldRegion()
@@ -198,6 +182,37 @@ public:
     }
     return sum / n;
   }
+
+  double getOldValues()
+  {
+    double sum = 0;
+    unsigned char n = 0;
+    for (unsigned char i = 0; i < 3; i++)
+    {
+      if (oldvalues[i] != 0)
+      {
+        sum += oldvalues[i];
+        n++;
+      }
+    }
+    return sum / n;
+  }
+
+  double getOldConvs()
+  {
+    double sum = 0;
+    unsigned char n = 0;
+    for (unsigned char i = 0; i < 3; i++)
+    {
+      if (oldconv[i] != 0)
+      {
+        sum += oldconv[i];
+        n++;
+      }
+    }
+    return sum / n;
+  }
+
   void setOldRegion(unsigned char value)
   {
     for (unsigned char i = 2; i > 0; i--)
@@ -206,99 +221,74 @@ public:
     }
     regions[0] = value;
   }
+
+    void setOldValues(double value)
+  {
+    for (unsigned char i = 2; i > 0; i--)
+    {
+      oldvalues[i] = oldvalues[i - 1];
+    }
+    oldvalues[0] = value;
+  }
+
+      void setOldConv(double value)
+  {
+    for (unsigned char i = 2; i > 0; i--)
+    {
+      oldconv[i] = oldconv[i - 1];
+    }
+    oldconv[0] = value;
+  }
   
   String steeringWheelValue(unsigned short r_value)
   {
     float prop = vRef_Proportion(r_value);
-    float middle =0;
     double value = (prop*360);
 
     static bool hypothetical = 1;
     static unsigned char current_region = 0;
     static unsigned char old_region;
-    double conValue;
+    static double old_value;
+    static double old_conv;
     String retValue = "";
-    double test_value = fmodf(((value - center) + 540), 360) - 180;
+    double conv_value = fmodf(((value - center) + 540), 360) - 180;
 
     if (hypothetical)
     {
-      if (test_value > dValueEsq && test_value < dValueDir)
+      if (conv_value > dValueEsq && conv_value < dValueDir)
       {
-        current_region = getRegion(test_value,hypothetical);
         hypothetical = 0;
-      }
-      else if (test_value <= r_Region2 && test_value >= r_Region1)
-      {
-        current_region = 2;
-        conValue = fmodf(((value - c_Region2) + 540), 360) - 180 + r_Region2;
-      }
-      else if (test_value < r_Region1)
-      {
-        current_region = 1;
-        conValue = fmodf(((value - c_Region1) + 540), 360) - 180 + r_Region1;
+        hypZone = 0;
       }
     }
     else
     {
       old_region = getOldRegion();
-      if (old_region == 1)
+      old_value = getOldValues();
+      old_conv = getOldConvs();
+      if (conv_value > dValueEsq && conv_value < dValueDir)
       {
-        test_value = fmodf(((value - c_Region1) + 540), 360) - 180 + r_Region1;
+        hypZone = 0;
+        current_region = getRegion(conv_value);
       }
-      else if (old_region == 2)
-      {
-        test_value = fmodf(((value - c_Region2) + 540), 360) - 180 + r_Region2;
-      }
-      else if (old_region == 5)
-      {
-        test_value = fmodf(((value - c_Region5) + 540), 360) - 180 + r_Region5;
-      }
-      else if (old_region == 6)
-      {
-        test_value = fmodf(((value - c_Region6) + 540), 360) - 180 + r_Region6;
-      }
-      else
-      {
-        test_value = fmodf(((value - center) + 540), 360) - 180;
-      }
-
-      if (test_value > r_Region2 && test_value < 0)
-      {
-        current_region = 3;
-        conValue = test_value;
-      }
-      else if (test_value >= 0 && test_value < r_Region5)
-      {
-        current_region = 4;
-      }
-      else if (test_value <= r_Region1 && (old_region == 1 || old_region == 2))
-      {
-        current_region = 1;
-      }
-      else if (test_value <= r_Region2 && (old_region == 1 || old_region == 2 || old_region == 3))
-      {
-        current_region = 2;
-      }
-      else if (test_value >= r_Region6 && (old_region == 5 || old_region == 6))
-      {
-        current_region = 6;
-      }
-      else if (test_value >= r_Region5 && (old_region == 4 || old_region == 5 || old_region == 6))
-      {
-        current_region = 5;
-      }
-
-      else
-      {
-        hypothetical = 1;
+      else{
+        hypZone = 1;
+        conv_value = fmodf(((value - old_value) + 540), 360) - 180 + old_conv;
+        current_region = getRegion(conv_value);
+        if (current_region != old_region && current_region!= 1)
+        {
+          hypothetical = 1;
+        }
       }
     } 
-    retValue = String(test_value / 2);
+    retValue = String(conv_value / 2);
     if (hypothetical)
     {
       retValue = retValue + "?";
     }
     setOldRegion(current_region);
+    setOldValues(value);
+    setOldConv(conv_value);
     return retValue;
   }
 };

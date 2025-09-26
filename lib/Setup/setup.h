@@ -145,7 +145,8 @@ const uint8_t screens[]={
 const uint8_t setupScreen_ID = 10;
 const uint8_t debugScreen_ID = 255;
 
-const uint8_t font_size_const = 7;
+const uint8_t font_size_const_y = 7;
+const uint8_t font_size_const_x = 4;
 
 
 #endif

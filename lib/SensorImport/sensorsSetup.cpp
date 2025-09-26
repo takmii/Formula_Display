@@ -1,6 +1,6 @@
 #include "sensorsSetup.h"
 
-SW_Settings SteeringWheel(330,135);
+SW_Settings SteeringWheel(237.48,125,155);
 
 Sensor Voltage_Sensor;
 Sensor Internal_Temperature_Sensor;
@@ -83,6 +83,8 @@ Sensor Wing_Extensometer_1_Sensor;
 Sensor Wing_Extensometer_2_Sensor;
 Sensor Wing_Extensometer_3_Sensor;
 Sensor Wing_Extensometer_4_Sensor;
+Sensor SD_Status;
+Sensor AccGyro_Status;
 // Formato para adicionar mais sensores " Sensor SensorVariable "
 
 Sensor *sensorIndex[] = {
@@ -167,7 +169,9 @@ Sensor *sensorIndex[] = {
     &Wing_Extensometer_1_Sensor,
     &Wing_Extensometer_2_Sensor,
     &Wing_Extensometer_3_Sensor,
-    &Wing_Extensometer_4_Sensor
+    &Wing_Extensometer_4_Sensor,
+    &SD_Status,
+    &AccGyro_Status
 
     // Formato para adicionar mais sensores " &SensorVariable "
 };

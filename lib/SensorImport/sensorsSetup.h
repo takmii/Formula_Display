@@ -96,6 +96,8 @@ extern Sensor Wing_Extensometer_1_Sensor;
 extern Sensor Wing_Extensometer_2_Sensor;
 extern Sensor Wing_Extensometer_3_Sensor;
 extern Sensor Wing_Extensometer_4_Sensor;
+extern Sensor SD_Status;
+extern Sensor AccGyro_Status;
     
 
 // Formato para adicionar mais sensores " extern Sensor SensorVariable "
@@ -130,34 +132,58 @@ signed char MS2_S8_Calibration(unsigned short value, unsigned short m, unsigned 
 class SW_Settings
 {
 private:
-  unsigned char dValue;
-  float center;
-  float c_Region1;
-  signed short r_Region1;
-  float c_Region2;
-  signed short r_Region2;
-  float c_Region5;
-  signed short r_Region5;
-  float c_Region6;
-  signed short r_Region6;
+  uint8_t Region_Number;
+  signed short dValueDir;
+  signed short dValueEsq;
+  double center;
+  signed short* r_Region;
+  double* c_Region;
   unsigned char regions[3] = {0, 0, 0};
 
 public:
-  unsigned char mValue;
+  unsigned short mValueEsq;
+  unsigned short mValueDir;
 
-  SW_Settings(float centerDeg, uint8_t mVal)
-      : mValue(mVal), center(centerDeg)
+  SW_Settings(double centerDeg, uint16_t mValEsq, uint16_t mValDir, uint8_t Reg_Number)
+      : mValueEsq(2*mValEsq), mValueDir(2*mValDir), center(centerDeg), Region_Number(Reg_Number)
   {
-    dValue = 180 - mValue;
-    r_Region2 = -dValue + 1;
-    c_Region2 = fmodf((center + r_Region2), 360);
-    r_Region5 = dValue - 1;
-    c_Region5 = fmodf((center + r_Region5), 360);
-    r_Region1 = r_Region2 - dValue;
-    c_Region1 = fmodf((center + r_Region1), 360);
-    r_Region6 = r_Region5 + dValue;
-    c_Region6 = fmodf((center + r_Region6), 360);
+    dValueEsq = -static_cast<signed short>(360 - mValueDir); // Logica invertida
+    dValueDir = static_cast<signed short>(360 - mValueEsq);
+
+    double stepEsq = static_cast<double>(mValueEsq) / Region_Number;
+    double stepDir = static_cast<double>(mValueDir) / Region_Number;
+
+    r_Region = new signed short[(2*Region_Number)+1];
+    r_Region[Region_Number] = 0;
+
+    c_Region = new double[(2*Region_Number)+1];
+    c_Region[Region_Number] = 0;
+
+    for (uint8_t i=0; i<Region_Number;i++){
+      r_Region[i]= static_cast<signed short>(-static_cast<signed short>(mValueEsq) + i * stepEsq);
+      c_Region[i] = fmodf((center + r_Region[i]), 360);
+    }
+    for(uint8_t i=0; i<Region_Number;i++){
+      r_Region[i+1+Region_Number]=static_cast<signed short>(i * stepEsq);
+      c_Region[i+1+Region_Number] = fmodf((center + r_Region[i]), 360);
+    }
   }
+  unsigned char getRegion(double value,bool hypothetical)
+  {
+    if (hypothetical&&(value> dValueEsq||value < dValueDir)){
+      for(uint8_t i=0;i<2*Region_Number;i++){
+        if (value>=c_Region[i] && value<=c_Region[i+1]){
+          return i;
+        }
+      }
+    }
+    else if (hypothetical&&(value<= dValueEsq||value >= dValueDir)){
+      for(uint8_t i=0;i<2*Region_Number;i++){
+        
+      }
+    }
+  }
+
   unsigned char getOldRegion()
   {
     unsigned char sum = 0;
@@ -185,30 +211,21 @@ public:
   {
     float prop = vRef_Proportion(r_value);
     float middle =0;
-    float value = (prop*360);
+    double value = (prop*360);
 
     static bool hypothetical = 1;
     static unsigned char current_region = 0;
     static unsigned char old_region;
-    float conValue;
+    double conValue;
     String retValue = "";
-    float test_value = fmodf(((value - center) + 540), 360) - 180;
+    double test_value = fmodf(((value - center) + 540), 360) - 180;
 
     if (hypothetical)
     {
-      if (test_value > r_Region2 && test_value < r_Region5)
+      if (test_value > dValueEsq && test_value < dValueDir)
       {
+        current_region = getRegion(test_value,hypothetical);
         hypothetical = 0;
-        if (test_value > r_Region2 && test_value < 0)
-        {
-          current_region = 3;
-          conValue = test_value;
-        }
-        else
-        {
-          current_region = 4;
-          conValue = test_value;
-        }
       }
       else if (test_value <= r_Region2 && test_value >= r_Region1)
       {
@@ -275,7 +292,7 @@ public:
       {
         hypothetical = 1;
       }
-    }
+    } 
     retValue = String(test_value / 2);
     if (hypothetical)
     {

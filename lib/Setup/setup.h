@@ -22,6 +22,7 @@
 #include <variables.h>
 #include <timeSetup.h>
 #include <max6675.h>
+#include <Formula_RPM_LED.h>
 
 extern TFT_eSPI tft;
 
@@ -36,6 +37,8 @@ extern __u16 bg_color;
 const float FtC = 0.55;
 
 extern __u8 actual_screen;
+
+extern __u16 rpm_led;
 
 void mainScreen();
 void screen2();
@@ -77,6 +80,8 @@ void fn_RPM(__u8 data[RPM_DLC]);
 void fn_ACC(__u8 data[ACC_DLC]);
 void fn_GYRO(__u8 data[GYRO_DLC]);
 void fn_Debug(__u8 data[DEBUG_DLC]);
+void sensor_ErrorHandler(__u8 data[ERROR_CHECK_DLC]);
+
 
 void fn_Group_0(__u8 data[GROUP0_DLC]);
 void fn_Group_1(__u8 data[GROUP1_DLC]);
@@ -101,7 +106,7 @@ void sensorUpdate(T value, __u8 index);
 #define D_WIFI true
 
 #define DISPLAY_TIMER 10
-#define TEMPERATURE_TIMER 250
+#define TEMPERATURE_TIMER 200
 #define CALIBRACAO_TIMER 500
 #define SD_TASK_TIMER CAN_TASK_TIMER
 
@@ -128,6 +133,8 @@ void sensorUpdate(T value, __u8 index);
 #define CS_TEMP5 GPIO_NUM_2
 #define CS_TEMP6 GPIO_NUM_0
 
+#define RPM_LED_PIN GPIO_NUM_5
+
 #define REFRESH_RATE 30
 #define REFRESH_TIMER 1000/REFRESH_RATE
 
@@ -147,6 +154,7 @@ const uint8_t debugScreen_ID = 255;
 
 const uint8_t font_size_const_y = 7;
 const uint8_t font_size_const_x = 4;
+
 
 
 #endif

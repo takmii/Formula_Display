@@ -1,6 +1,6 @@
 #include <setup.h>
 
-bool debug_mode = 1;
+bool debug_mode =1;
 
 class Display
 {
@@ -268,6 +268,8 @@ using DisplayObject = Display::DObj;
 
 __u16 bg_color = DisplayObject::displayRGB(14, 3, 51);
 
+__u16 rpm_led = 0;
+
 char sensorValues[BUFFER_NUMBER][BUFFER_LENGTH][MAX_SENSORS][BUFFER_SIZE];
 uint32_t timeValues[BUFFER_NUMBER][BUFFER_LENGTH];
 
@@ -307,12 +309,14 @@ uint16_t negyPrintln(const DisplayObject *obj);
 uint16_t xPrintln(const DisplayObject *obj);
 uint16_t negxPrintln(const DisplayObject *obj);
 
-MAX6675 s_BrakeTempFR(V_CLK, CS_TEMP1, V_SO);
-MAX6675 s_BrakeTempFL(V_CLK, CS_TEMP2, V_SO);
-MAX6675 s_BrakeTempRR(V_CLK, CS_TEMP3, V_SO);
-MAX6675 s_BrakeTempRL(V_CLK, CS_TEMP4, V_SO);
-MAX6675 s_FirewallTemp1(V_CLK, CS_TEMP5, V_SO);
-MAX6675 s_FirewallTemp2(V_CLK, CS_TEMP6, V_SO);
+MAX6675 s_BrakeTempFR(V_CLK, CS_TEMP5, V_SO);
+MAX6675 s_BrakeTempFL(V_CLK, CS_TEMP6, V_SO);
+MAX6675 s_BrakeTempRR(V_CLK, CS_TEMP4, V_SO);
+MAX6675 s_BrakeTempRL(V_CLK, CS_TEMP3, V_SO);
+MAX6675 s_FirewallTemp1(V_CLK, CS_TEMP1, V_SO);
+MAX6675 s_FirewallTemp2(V_CLK, CS_TEMP2, V_SO);
+
+Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUM_LEDS, RPM_LED_PIN, NEO_GRB + NEO_KHZ800);
 
 void setup()
 {
@@ -326,6 +330,9 @@ void setup()
   pinMode(BTN_RIGHT, INPUT);
   pinMode(BTN_RETURN, INPUT);
   pinMode(BTN_SELECT, INPUT);
+
+   
+   
 
   if (WiFi.status() != WL_CONNECTED)
   {
@@ -343,6 +350,9 @@ void setup()
   tft.setRotation(0);
 
   tft.fillScreen(bg_color);
+
+  pixels.setBrightness(BRIGHTNESS);
+   pixels.begin();
 
   xTaskCreatePinnedToCore(
       CAN_receiveTask, // Function
@@ -377,7 +387,7 @@ void setup()
   xTaskCreatePinnedToCore(
       refreshRateTask, // Function to implement the task
       "Refresh",       // Name of the task
-      4096,            // Stack size in words
+      8192,            // Stack size in words
       NULL,            // Task input parameter
       2,               // Priority of the task
       NULL,            // Task handle
@@ -545,6 +555,10 @@ void CAN_setSensor(const __u8 *canData, __u8 canPacketSize, __u32 canId)
     fn_timeSet(data);
     break;
 
+  case ERROR_CHECK_ID:
+    sensor_ErrorHandler(data);
+    break;
+
   case BASE_ID + GROUP0_ID:
     fn_Group_0(data);
     break;
@@ -620,16 +634,21 @@ void fn_Data_01(__u8 data[DATA_01_DLC])
 
 void fn_Data_02(__u8 data[DATA_02_DLC])
 {
+  const static float Susp_FR_Center = -11.6;
+  const static float Susp_FL_Center = 76.3;
+  const static float Susp_RR_Center = 0;
+  const static float Susp_RL_Center = 0;
+
   __u16 r_Susp_FR = ((data[1] & 0x0F) << 8) + data[0];
   __u16 r_Susp_FL = (data[2] << 4) + ((data[1] >> 4) & 0x0F);
   __u16 r_Susp_RR = ((data[4] & 0x0F) << 8) + data[3];
   __u16 r_Susp_RL = (data[5] << 4) + ((data[4] >> 4) & 0x0F);
   __u16 r_WheelAngle = ((data[7] & 0x0F) << 8) + data[6];
 
-  float Susp_FR = suspSensor(r_Susp_FR);
-  float Susp_FL = suspSensor(r_Susp_FL);
-  float Susp_RR = suspSensor(r_Susp_RR);
-  float Susp_RL = suspSensor(r_Susp_RL);
+  float Susp_FR = suspSensor(r_Susp_FR,0,Susp_FR_Center);
+  float Susp_FL = suspSensor(r_Susp_FL,1,Susp_FL_Center);
+  float Susp_RR = suspSensor(r_Susp_RR,0,Susp_RR_Center);
+  float Susp_RL = suspSensor(r_Susp_RL,1,Susp_RL_Center);
   String WheelAngle = SteeringWheel.steeringWheelValue(r_WheelAngle);
 
   sensorUpdate(Susp_FR, Susp_Pos_FR_Sensor.index);
@@ -747,18 +766,11 @@ void fn_GYRO(__u8 data[GYRO_DLC])
   int16_t GyY = (int16_t)(data[3] << 8 | data[2]);
   int16_t GyZ = (int16_t)(data[5] << 8 | data[4]);
 
-  float roll_rate = 1.3;
-  float pitch_rate = -3.25;
-  float yaw_rate = -1.12;
   float RateRoll, RatePitch, RateYaw;
 
   RateRoll = (float)GyX / 65.5;
   RatePitch = (float)GyY / 65.5;
   RateYaw = (float)GyZ / 65.5;
-
-  RateRoll -= roll_rate;
-  RatePitch -= pitch_rate;
-  RateYaw -= yaw_rate;
 
   sensorUpdate(RateRoll, Gyro_X.index);
   sensorUpdate(RatePitch, Gyro_Y.index);
@@ -833,6 +845,11 @@ void fn_Debug(__u8 data[DEBUG_DLC])
       string_flag = false;
     }
   }
+}
+
+void sensor_ErrorHandler(__u8 data[ERROR_CHECK_DLC]){
+  String error = (data[0]==0xFF)?"C":String(data[0]);
+  sensorUpdate(error,SensorCheck_Status.index);
 }
 
 void init_twai()
@@ -988,6 +1005,8 @@ void refreshRateTask(void *parameter)
   for (;;)
   {
     Display::refreshAll();
+    ledTurnOff();
+    updateRPM(rpm_led);
     vTaskDelayUntil(&xLastWakeTime, xFrequency);
   }
 }
@@ -1026,14 +1045,6 @@ void mainScreen()
   static DisplayObject Line1(0, yPrintln(&RPM_Text));
   Line1.drawXline(tft.width());
 
-  static DisplayObject sWheel(tft.width() / 2, yPrintln(&Line1));
-  sWheel.size = 3;
-  sWheel.writeTopCenterText(SteerWheel_Pos_Sensor.value);
-
-  static DisplayObject sWheel_Text(tft.width() / 2, yPrintln(&sWheel));
-  sWheel_Text.size = 2;
-  sWheel_Text.writeTopCenterText("St_Wheel");
-
     static DisplayObject StatusSD(0,tft.height());
   StatusSD.size=3;
   StatusSD.writeBottomLeftText(SD_Status.value);
@@ -1044,33 +1055,69 @@ void mainScreen()
   static DisplayObject Line3(xPrintln(&StatusSD),Line2.pos_y);
   Line3.drawYline(tft.height()-Line3.pos_y);
 
-  static DisplayObject StatusAccelGyro(xPrintln(&StatusSD),tft.height());
+  static DisplayObject sWheel(tft.width() / 2, negyPrintln(&Line2));
+  sWheel.size = 3;
+  sWheel.writeBottomCenterText(SteerWheel_Pos_Sensor.value);
+
+  static DisplayObject sWheel_Text(tft.width() / 2, negyPrintln(&sWheel));
+  sWheel_Text.size = 2;
+  sWheel_Text.writeBottomCenterText("St_Wheel");
+
+  static DisplayObject StatusAccelGyro(xPrintln(&Line3),tft.height());
   StatusAccelGyro.size=3;
   StatusAccelGyro.writeBottomLeftText(AccGyro_Status.value);
 
-  static DisplayObject MAP1(0,negyPrintln(&Line2));
-  MAP1.size=3;
-  MAP1.writeBottomLeftText(MAP1_Sensor.value);
+  static DisplayObject SensorError(tft.width(),tft.height());
+  SensorError.size=3;
+  SensorError.writeBottomRightText(SensorCheck_Status.value);
 
-  static DisplayObject MAP1_text(0,negyPrintln(&MAP1));
-  MAP1_text.size=2;
-  MAP1_text.writeBottomLeftText("MAP 1");
+  static DisplayObject OilP(0,yPrintln(&Line1));
+  OilP.size=3;
+  OilP.writeTopLeftText(Oil_Pressure_Sensor.value);
 
-  static DisplayObject MAF(tft.width()/2,negyPrintln(&Line2));
-  MAF.size=3;
-  MAF.writeBottomCenterText(MAF_Sensor.value);
+  static DisplayObject OilP_text(0,yPrintln(&OilP));
+  OilP_text.size=2;
+  OilP_text.writeTopLeftText("Oil_P");
 
-  static DisplayObject MAF_text(tft.width()/2,negyPrintln(&MAF));
-  MAF_text.size=2;
-  MAF_text.writeBottomCenterText("MAF");
+  //static DisplayObject MAF(tft.width()/2,negyPrintln(&Line2));
+  //MAF.size=3;
+  //MAF.writeBottomCenterText(MAF_Sensor.value);
 
-  static DisplayObject tOil(tft.width(),negyPrintln(&Line2));
-  tOil.size=3;
-  tOil.writeBottomRightText(Oil_Temperature_Sensor.value);
+  //static DisplayObject MAF_text(tft.width()/2,negyPrintln(&MAF));
+  //MAF_text.size=2;
+  //MAF_text.writeBottomCenterText("MAF");
 
-  static DisplayObject tOil_text(tft.width(),negyPrintln(&tOil));
-  tOil_text.size=2;
-  tOil_text.writeBottomRightText("Oil Temp");
+  static DisplayObject xAcc(tft.width(),yPrintln(&Line1));
+  xAcc.size=3;
+  xAcc.writeTopRightText(Accel_X.value);
+
+  static DisplayObject xAcc_text(tft.width(),yPrintln(&xAcc));
+  xAcc_text.size=2;
+  xAcc_text.writeTopRightText("Ac_Lat");
+
+  /*static DisplayObject AcX(0,negyPrintln(&Line2));
+  AcX.size=3;
+  AcX.writeBottomLeftText(Accel_X.value);
+
+  static DisplayObject AcX_text(0,negyPrintln(&AcX));
+  AcX_text.size=2;
+  AcX_text.writeBottomLeftText("AcX");
+
+  static DisplayObject AcY(tft.width()/2,negyPrintln(&Line2));
+  AcY.size=3;
+  AcY.writeBottomCenterText(Accel_Y.value);
+
+  static DisplayObject AcY_text(tft.width()/2,negyPrintln(&AcY));
+  AcY_text.size=2;
+  AcY_text.writeBottomCenterText("AcY");
+
+  static DisplayObject AcZ(tft.width(),negyPrintln(&Line2));
+  AcZ.size=3;
+  AcZ.writeBottomRightText(Accel_Z.value);
+
+  static DisplayObject AcZ_text(tft.width(),negyPrintln(&AcZ));
+  AcZ_text.size=2;
+  AcZ_text.writeBottomRightText("AcZ");*/
 
 
 }
@@ -1100,83 +1147,78 @@ void debugScreen()
 {
   displaySetScreen(debugScreen_ID);
 
-  /*static DisplayObject AccX(0, 0);
-  static DisplayObject AccX_Text(0, yPrintln(&AccX));
+  // --- Accelerometer ---
+/*static DisplayObject AccX(0, 0);
+AccX.size = 3;
+AccX.writeTopLeftText(Accel_X.value);
 
-  static DisplayObject AccY(tft.width() / 2, 0);
-  static DisplayObject AccY_Text(tft.width() / 2, yPrintln(&AccY));
+static DisplayObject AccX_Text(0, yPrintln(&AccX));
+AccX_Text.size = 2;
+AccX_Text.writeTopLeftText("AccX");
 
-  static DisplayObject AccZ(tft.width(), 0);
-  static DisplayObject AccZ_Text(tft.width(), yPrintln(&AccZ));
+static DisplayObject AccY(tft.width() / 2, 0);
+AccY.size = 3;
+AccY.writeTopCenterText(Accel_Y.value);
 
-  static DisplayObject GyroX(0, tft.height());
-  static DisplayObject GyroX_Text(0, negyPrintln(&GyroX));
+static DisplayObject AccY_Text(tft.width() / 2, yPrintln(&AccY));
+AccY_Text.size = 2;
+AccY_Text.writeTopCenterText("AccY");
 
-  static DisplayObject GyroY(tft.width() / 2, tft.height());
-  static DisplayObject GyroY_Text(tft.width() / 2, negyPrintln(&GyroY));
+static DisplayObject AccZ(tft.width(), 0);
+AccZ.size = 3;
+AccZ.writeTopRightText(Accel_Z.value);
 
-  static DisplayObject GyroZ(tft.width(), tft.height());
-  static DisplayObject GyroZ_Text(tft.width(), negyPrintln(&GyroZ));
+static DisplayObject AccZ_Text(tft.width(), yPrintln(&AccZ));
+AccZ_Text.size = 2;
+AccZ_Text.writeTopRightText("AccZ");
 
-  static DisplayObject Amod(tft.width() / 2, tft.height() / 2);
+// --- Gyroscope ---
+static DisplayObject GyroX(0, tft.height());
+GyroX.size = 3;
+GyroX.writeBottomLeftText(Gyro_X.value);
 
-  static DisplayObject wAngle(0, tft.height() / 2);
-  static DisplayObject wAngle_Text(0, yPrintln(&wAngle));
+static DisplayObject GyroX_Text(0, negyPrintln(&GyroX));
+GyroX_Text.size = 2;
+GyroX_Text.writeBottomLeftText("GyroX");
 
-  static DisplayObject OilPress(tft.width(), tft.height() / 2);
-  static DisplayObject OilPress_Text(tft.width(), yPrintln(&OilPress));
+static DisplayObject GyroY(tft.width() / 2, tft.height());
+GyroY.size = 3;
+GyroY.writeBottomCenterText(Gyro_Y.value);
 
-  AccX.size = 3;
-  AccX_Text.size = 2;
+static DisplayObject GyroY_Text(tft.width() / 2, negyPrintln(&GyroY));
+GyroY_Text.size = 2;
+GyroY_Text.writeBottomCenterText("GyroY");
 
-  AccY.size = 3;
-  AccY_Text.size = 2;
+static DisplayObject GyroZ(tft.width(), tft.height());
+GyroZ.size = 3;
+GyroZ.writeBottomRightText(Gyro_Z.value);
 
-  AccZ.size = 3;
-  AccZ_Text.size = 2;
+static DisplayObject GyroZ_Text(tft.width(), negyPrintln(&GyroZ));
+GyroZ_Text.size = 2;
+GyroZ_Text.writeBottomRightText("GyroZ");
 
-  GyroX.size = 3;
-  GyroX_Text.size = 2;
+// --- Amplitude Mod ---
+static DisplayObject Amod(tft.width() / 2, tft.height() / 2);
+Amod.size = 3;
+Amod.writeCenterText(Accel.value);
 
-  GyroY.size = 3;
-  GyroY_Text.size = 2;
+// --- Wheel Angle ---
+static DisplayObject wAngle(0, tft.height() / 2);
+wAngle.size = 3;
+wAngle.writeLeftText(SteerWheel_Pos_Sensor.value);
 
-  GyroZ.size = 3;
-  GyroZ_Text.size = 2;
+static DisplayObject wAngle_Text(0, yPrintln(&wAngle));
+wAngle_Text.size = 2;
+wAngle_Text.writeLeftText("Wheel");*/
 
-  Amod.size = 3;
+// --- Oil Pressure (comentado no original) ---
+// static DisplayObject OilPress(tft.width(), tft.height() / 2);
+// OilPress.size = 3;
+// OilPress.writeRightText(Oil_Pressure_Sensor.value);
 
-  wAngle.size = 3;
-  wAngle_Text.size = 2;
-
-  OilPress.size = 3;
-  OilPress_Text.size = 2;
-
-  AccX.writeTopLeftText(Accel_X.value);
-  AccX_Text.writeTopLeftText("AccX");
-
-  AccY.writeTopCenterText(Accel_Y.value);
-  AccY_Text.writeTopCenterText("AccY");
-
-  AccZ.writeTopRightText(Accel_Z.value);
-  AccZ_Text.writeTopRightText("AccZ");
-
-  GyroX.writeBottomLeftText(Gyro_X.value);
-  GyroX_Text.writeBottomLeftText("GyroX");
-
-  GyroY.writeBottomCenterText(Gyro_Y.value);
-  GyroY_Text.writeBottomCenterText("GyroY");
-
-  GyroZ.writeBottomRightText(Gyro_Z.value);
-  GyroZ_Text.writeBottomRightText("GyroZ");
-
-  wAngle.writeLeftText(SteerWheel_Pos_Sensor.value);
-  wAngle_Text.writeLeftText("Wheel");
-
-  //OilPress.writeRightText(Oil_Pressure_Sensor.value);
-  //OilPress_Text.writeRightText("Oil Press");
-
-  Amod.writeCenterText(Accel.value);*/
+// static DisplayObject OilPress_Text(tft.width(), yPrintln(&OilPress));
+// OilPress_Text.size = 2;
+// OilPress_Text.writeRightText("Oil Press");
 
 
   static DisplayObject Temp_BrakeFL(0, 0);
@@ -1227,6 +1269,50 @@ void debugScreen()
   Firewall_Temp2_Text.size = 2;
   Firewall_Temp2_Text.writeRightText("Firewall 2");
 
+
+
+  /*static DisplayObject SuspPosFL(0,0);
+  SuspPosFL.size = 3;
+  SuspPosFL.writeTopLeftText(Susp_Pos_FL_Sensor.value);
+
+  static DisplayObject SuspPosFL_Text(0, yPrintln(&SuspPosFL));
+  SuspPosFL_Text.size = 2;
+  SuspPosFL_Text.writeTopLeftText("Pos FL");
+
+  static DisplayObject SuspPosFR(tft.width(), 0);
+  SuspPosFR.size = 3;
+  SuspPosFR.writeTopRightText(Susp_Pos_FR_Sensor.value);
+
+  static DisplayObject SuspPosFR_Text(tft.width(), yPrintln(&SuspPosFR));
+  SuspPosFR_Text.size = 2;
+  SuspPosFR_Text.writeTopRightText("Pos FR");
+
+  static DisplayObject SuspPosRL(0, tft.height());
+  SuspPosRL.size = 3;
+  SuspPosRL.writeBottomLeftText(Susp_Pos_RL_Sensor.value);
+
+  static DisplayObject SuspPosRL_Text(0, negyPrintln(&SuspPosRL));
+  SuspPosRL_Text.size = 2;
+  SuspPosRL_Text.writeBottomLeftText("Pos RL");
+
+  static DisplayObject SuspPosRR(tft.width(), tft.height());
+  SuspPosRR.size = 3;
+  SuspPosRR.writeBottomRightText(Susp_Pos_RR_Sensor.value);
+
+  static DisplayObject SuspPosRR_Text(tft.width(), negyPrintln(&SuspPosRR));
+  SuspPosRR_Text.size = 2;
+  SuspPosRR_Text.writeBottomRightText("Pos RR");
+
+  static DisplayObject wAngle(tft.width()/2, tft.height() / 2);
+  wAngle.size = 3;
+  wAngle.writeCenterText(SteerWheel_Pos_Sensor.value);
+
+  static DisplayObject wAngle_Text(tft.width()/2, yPrintln(&wAngle));
+  wAngle_Text.size = 2;
+    wAngle_Text.writeCenterText("Wheel");*/
+
+  
+
   /*static DisplayObject MAP1(0, 0);
   static DisplayObject MAP1_Text(0, yPrintln(&MAP1));
 
@@ -1239,8 +1325,7 @@ void debugScreen()
   static DisplayObject Oil_Temp(tft.width(), tft.height());
   static DisplayObject Oil_Temp_Text(tft.width(), negyPrintln(&Oil_Temp));
 
-  static DisplayObject wAngle(tft.width()/2, tft.height() / 2);
-  static DisplayObject wAngle_Text(tft.width()/2, yPrintln(&wAngle));
+  
 
   MAP1.size = 3;
   MAP1_Text.size = 2;
@@ -1268,10 +1353,9 @@ void debugScreen()
   MAF_Text.writeBottomLeftText("MAF");
 
   Oil_Temp.writeBottomRightText(Oil_Temperature_Sensor.value + "C");
-  Oil_Temp_Text.writeBottomRightText("Oil Temp");
+  Oil_Temp_Text.writeBottomRightText("Oil Temp");*/
 
-  wAngle.writeCenterText(SteerWheel_Pos_Sensor.value);
-  wAngle_Text.writeCenterText("Wheel");*/
+  
 
 }
 
@@ -1393,14 +1477,14 @@ uint16_t xPrintln(const DisplayObject *obj)
   }
   return (uint16_t)(obj->pos_x + 7 + (size * font_size_const_x));
 }
-  else if(obj->object_type==2){
-    return (uint16_t)(obj->pos_x + 2);
+  else if(obj->object_type==3){
+    return (uint16_t)(obj->pos_x + 4);
   }
 }
 
 uint16_t negxPrintln(const DisplayObject *obj)
 {
-  if (obj->object_type==1){
+  if (obj->object_type==3){
   float size = (float)obj->size;
   if (obj->datum == ML_DATUM || obj->datum == TL_DATUM || obj->datum == BL_DATUM)
   {
@@ -1416,8 +1500,8 @@ uint16_t negxPrintln(const DisplayObject *obj)
   }
   return (uint16_t)(obj->pos_x + 7 + (size * font_size_const_x));
 }
-  else if(obj->object_type==2){
-    return (uint16_t)(obj->pos_x - 2);
+  else if(obj->object_type==3){
+    return (uint16_t)(obj->pos_x - 3);
   }
 }
 
@@ -1432,29 +1516,34 @@ void temperatureTask(void *parameter)
     float DiskTemp_FR = readTempC(&s_BrakeTempFR);
     sensorUpdate(DiskTemp_FR, Disk_Temp_FR_Sensor.index); // Front Right
     uint16_t DT_FR = floattoU16(DiskTemp_FR, 2);
+    vTaskDelay(pdMS_TO_TICKS(10));
 
     // Ler sensor 2
     float DiskTemp_FL = readTempC(&s_BrakeTempFL);
     sensorUpdate(DiskTemp_FL, Disk_Temp_FL_Sensor.index); // Front Left
     uint16_t DT_FL = floattoU16(DiskTemp_FL, 2);
+    vTaskDelay(pdMS_TO_TICKS(10));
 
     // Ler sensor 3
     float DiskTemp_RR = readTempC(&s_BrakeTempRR);
     sensorUpdate(DiskTemp_RR, Disk_Temp_RR_Sensor.index); // Rear Right
     uint16_t DT_RR = floattoU16(DiskTemp_RR, 2);
+    vTaskDelay(pdMS_TO_TICKS(10));
 
     // Ler sensor 4
     float DiskTemp_RL = readTempC(&s_BrakeTempRL);
     sensorUpdate(DiskTemp_RL, Disk_Temp_RL_Sensor.index); // Rear Left
     uint16_t DT_RL = floattoU16(DiskTemp_RL, 2);
+    vTaskDelay(pdMS_TO_TICKS(10));
 
     // Ler sensor 5
     float FirewallTemp_1 = readTempC(&s_FirewallTemp1);
     sensorUpdate(FirewallTemp_1, Firewall_Temperature1_Sensor.index);
     uint16_t DT_F1 = floattoU16(FirewallTemp_1, 2);
+    vTaskDelay(pdMS_TO_TICKS(10));
 
     // Ler sensor 6
-    float FirewallTemp_2 = 1.58 * readTempC(&s_FirewallTemp2) - 40.33;
+    float FirewallTemp_2 = readTempC(&s_FirewallTemp2);
     sensorUpdate(FirewallTemp_2, Firewall_Temperature2_Sensor.index);
     uint16_t DT_F2 = floattoU16(FirewallTemp_2, 2);
 
@@ -1502,7 +1591,8 @@ void fn_Group_0(__u8 data[GROUP0_DLC])
   float pw1 = MS2_Float_Calibration(r_pw1,MS2_1_cal,MS2_1000_cal);
   float pw2 = MS2_Float_Calibration(r_pw2,MS2_1_cal,MS2_1000_cal);
   __u16 RPM = MS2_U16_Calibration(r_RPM,MS2_1_cal,MS2_1_cal);
-  
+
+  rpm_led = RPM;
 
   sensorUpdate(seconds, MS2_Sec.index);
   sensorUpdate(pw1, MS2_Bank1.index);

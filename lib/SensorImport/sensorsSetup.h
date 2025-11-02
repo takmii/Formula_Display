@@ -8,6 +8,8 @@
 #define A_5_5V 6825
 const float VRefMax = 5.1615;
 
+const unsigned char steeringwheel_n_values = 1;
+
 class Sensor {
     public:
       String value ="$";
@@ -98,6 +100,7 @@ extern Sensor Wing_Extensometer_3_Sensor;
 extern Sensor Wing_Extensometer_4_Sensor;
 extern Sensor SD_Status;
 extern Sensor AccGyro_Status;
+extern Sensor SensorCheck_Status;
     
 
 // Formato para adicionar mais sensores " extern Sensor SensorVariable "
@@ -114,7 +117,7 @@ float TempSensor(__u16 value, __u32 R1, __u32 R2, float c1, float c2, float c3);
 float vBatSensor(__u16 value);
 float vRefSensor(__u16 value);
 float internalTemp(__u16 value);
-float suspSensor(__u16 value);
+float suspSensor(__u16 value,bool direction, float center);
 float mapSensor(__u16 value);
 float mafSensor(__u16 value);
 float tempSensor(__u16 value,double a,double b,double c);
@@ -135,35 +138,47 @@ private:
   signed short dValueDir;
   signed short dValueEsq;
   double center;
-  double oldvalues[3] = {0, 0, 0};
-  double oldconv[3] = {0, 0, 0};
-  unsigned char regions[3] = {0, 0, 0};
-  bool hypZone = 1;
+  
+  double oldvalues[steeringwheel_n_values];
+  double oldconv[steeringwheel_n_values];
+  unsigned char regions[steeringwheel_n_values];  
 
 public:
   unsigned short mValueEsq;
   unsigned short mValueDir;
+
+  void setZero(){
+    for (uint8_t i=0;i<steeringwheel_n_values;i++){
+      oldvalues[i]=0;
+      oldconv[i]=0;
+      regions[i]=0;
+    }
+  }
 
   SW_Settings(double centerDeg, uint16_t mValEsq, uint16_t mValDir)
       : mValueEsq(2*mValEsq), mValueDir(2*mValDir), center(centerDeg)
   {
     dValueEsq = -static_cast<signed short>(360 - mValueDir); // Logica invertida
     dValueDir = static_cast<signed short>(360 - mValueEsq);
+    setZero();
   }
     unsigned char getRegion(double value)
   {
     unsigned char region;
     if (value > dValueEsq && value < dValueDir)
     {
-      region = 1;
+      region = 2;
     }
     else if (value <= dValueEsq)
     {
-      region = 0;
+      region = 1;
     }
-    else
+    else if (value >= dValueEsq)
     {
-      region = 2;
+      region = 3;
+    }
+    else{
+      region = 0;
     }
     return region;
   }
@@ -172,13 +187,16 @@ public:
   {
     unsigned char sum = 0;
     unsigned char n = 0;
-    for (unsigned char i = 0; i < 3; i++)
+    for (unsigned char i = 0; i < steeringwheel_n_values; i++)
     {
       if (regions[i] != 0)
       {
         sum += regions[i];
         n++;
       }
+    }
+    if (n == 0) {
+        return 0;             
     }
     return sum / n;
   }
@@ -187,7 +205,7 @@ public:
   {
     double sum = 0;
     unsigned char n = 0;
-    for (unsigned char i = 0; i < 3; i++)
+    for (unsigned char i = 0; i < steeringwheel_n_values; i++)
     {
       if (oldvalues[i] != 0)
       {
@@ -195,6 +213,10 @@ public:
         n++;
       }
     }
+     if (n == 0) {
+      return 0.0;
+  }
+
     return sum / n;
   }
 
@@ -202,7 +224,7 @@ public:
   {
     double sum = 0;
     unsigned char n = 0;
-    for (unsigned char i = 0; i < 3; i++)
+    for (unsigned char i = 0; i < steeringwheel_n_values; i++)
     {
       if (oldconv[i] != 0)
       {
@@ -210,33 +232,43 @@ public:
         n++;
       }
     }
+     if (n == 0) {
+      return 0.0;
+  }
+
     return sum / n;
   }
 
   void setOldRegion(unsigned char value)
   {
-    for (unsigned char i = 2; i > 0; i--)
+    if (steeringwheel_n_values>1){
+    for (unsigned char i = steeringwheel_n_values-1; i > 0; i--)
     {
       regions[i] = regions[i - 1];
+    }
     }
     regions[0] = value;
   }
 
     void setOldValues(double value)
   {
-    for (unsigned char i = 2; i > 0; i--)
+    if (steeringwheel_n_values>1){
+    for (unsigned char i = steeringwheel_n_values-1; i > 0; i--)
     {
       oldvalues[i] = oldvalues[i - 1];
     }
+  }
     oldvalues[0] = value;
   }
 
       void setOldConv(double value)
   {
-    for (unsigned char i = 2; i > 0; i--)
+    if (steeringwheel_n_values>1){
+    for (unsigned char i = steeringwheel_n_values-1; i > 0; i--)
     {
       oldconv[i] = oldconv[i - 1];
     }
+  }
     oldconv[0] = value;
   }
   
@@ -258,7 +290,6 @@ public:
       if (conv_value > dValueEsq && conv_value < dValueDir)
       {
         hypothetical = 0;
-        hypZone = 0;
       }
     }
     else
@@ -268,14 +299,12 @@ public:
       old_conv = getOldConvs();
       if (conv_value > dValueEsq && conv_value < dValueDir)
       {
-        hypZone = 0;
         current_region = getRegion(conv_value);
       }
       else{
-        hypZone = 1;
         conv_value = fmodf(((value - old_value) + 540), 360) - 180 + old_conv;
         current_region = getRegion(conv_value);
-        if (current_region != old_region && current_region!= 1)
+        if ((current_region ==1 && old_region==3) || (current_region ==3 && old_region==1))
         {
           hypothetical = 1;
         }

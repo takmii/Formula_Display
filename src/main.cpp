@@ -311,10 +311,10 @@ uint16_t negxPrintln(const DisplayObject *obj);
 
 MAX6675 s_BrakeTempFR(V_CLK, CS_TEMP5, V_SO);
 MAX6675 s_BrakeTempFL(V_CLK, CS_TEMP6, V_SO);
-MAX6675 s_BrakeTempRR(V_CLK, CS_TEMP4, V_SO);
+MAX6675 s_BrakeTempRR(V_CLK, CS_TEMP2, V_SO);
 MAX6675 s_BrakeTempRL(V_CLK, CS_TEMP3, V_SO);
 MAX6675 s_FirewallTemp1(V_CLK, CS_TEMP1, V_SO);
-MAX6675 s_FirewallTemp2(V_CLK, CS_TEMP2, V_SO);
+MAX6675 s_FirewallTemp2(V_CLK, CS_TEMP4, V_SO);
 
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUM_LEDS, RPM_LED_PIN, NEO_GRB + NEO_KHZ800);
 
@@ -1221,7 +1221,7 @@ wAngle_Text.writeLeftText("Wheel");*/
 // OilPress_Text.writeRightText("Oil Press");
 
 
-  static DisplayObject Temp_BrakeFL(0, 0);
+  /*static DisplayObject Temp_BrakeFL(0, 0);
   Temp_BrakeFL.size = 3;
   Temp_BrakeFL.writeTopLeftText(Disk_Temp_FL_Sensor.value + "C");
   
@@ -1267,11 +1267,11 @@ wAngle_Text.writeLeftText("Wheel");*/
 
   static DisplayObject Firewall_Temp2_Text(tft.width(), yPrintln(&Firewall_Temp1));
   Firewall_Temp2_Text.size = 2;
-  Firewall_Temp2_Text.writeRightText("Firewall 2");
+  Firewall_Temp2_Text.writeRightText("Firewall 2");*/
 
 
 
-  /*static DisplayObject SuspPosFL(0,0);
+  static DisplayObject SuspPosFL(0,0);
   SuspPosFL.size = 3;
   SuspPosFL.writeTopLeftText(Susp_Pos_FL_Sensor.value);
 
@@ -1309,7 +1309,7 @@ wAngle_Text.writeLeftText("Wheel");*/
 
   static DisplayObject wAngle_Text(tft.width()/2, yPrintln(&wAngle));
   wAngle_Text.size = 2;
-    wAngle_Text.writeCenterText("Wheel");*/
+    wAngle_Text.writeCenterText("Wheel");
 
   
 

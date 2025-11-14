@@ -1221,21 +1221,7 @@ wAngle_Text.writeLeftText("Wheel");*/
 // OilPress_Text.writeRightText("Oil Press");
 
 
-  /*static DisplayObject Temp_BrakeFL(0, 0);
-  Temp_BrakeFL.size = 3;
-  Temp_BrakeFL.writeTopLeftText(Disk_Temp_FL_Sensor.value + "C");
   
-  static DisplayObject Temp_BrakeFL_Text(0, yPrintln(&Temp_BrakeFL));
-  Temp_BrakeFL_Text.size = 2;
-  Temp_BrakeFL_Text.writeTopLeftText("Brake FL");
-
-  static DisplayObject Temp_BrakeFR(tft.width(), 0);
-  Temp_BrakeFR.size = 3;
-  Temp_BrakeFR.writeTopRightText(Disk_Temp_FR_Sensor.value + "C");
-
-  static DisplayObject Temp_BrakeFR_Text(tft.width(), yPrintln(&Temp_BrakeFR));
-  Temp_BrakeFR_Text.size = 2;
-  Temp_BrakeFR_Text.writeTopRightText("Brake FR");
 
   static DisplayObject Temp_BrakeRL(0, tft.height());
   Temp_BrakeRL.size = 3;
@@ -1253,7 +1239,25 @@ wAngle_Text.writeLeftText("Wheel");*/
   Temp_BrakeRR_Text.size = 2;
   Temp_BrakeRR_Text.writeBottomRightText("Brake RR");
 
-  static DisplayObject Firewall_Temp1(0, tft.height() / 2);
+
+
+  static DisplayObject Temp_BrakeFL(0, negyPrintln(&Temp_BrakeRL_Text)-12);
+  Temp_BrakeFL.size = 3;
+  Temp_BrakeFL.writeBottomLeftText(Disk_Temp_FL_Sensor.value + "C");
+  
+  static DisplayObject Temp_BrakeFL_Text(0, negyPrintln(&Temp_BrakeFL));
+  Temp_BrakeFL_Text.size = 2;
+  Temp_BrakeFL_Text.writeBottomLeftText("Brake FL");
+
+  static DisplayObject Temp_BrakeFR(tft.width(), negyPrintln(&Temp_BrakeRR_Text)-12);
+  Temp_BrakeFR.size = 3;
+  Temp_BrakeFR.writeBottomRightText(Disk_Temp_FR_Sensor.value + "C");
+
+  static DisplayObject Temp_BrakeFR_Text(tft.width(), negyPrintln(&Temp_BrakeFR));
+  Temp_BrakeFR_Text.size = 2;
+  Temp_BrakeFR_Text.writeBottomRightText("Brake FR");
+
+  /*static DisplayObject Firewall_Temp1(0, tft.height() / 2);
   Firewall_Temp1.size = 3;
   Firewall_Temp1.writeLeftText(Firewall_Temperature1_Sensor.value + "C");
 
@@ -1287,29 +1291,29 @@ wAngle_Text.writeLeftText("Wheel");*/
   SuspPosFR_Text.size = 2;
   SuspPosFR_Text.writeTopRightText("Pos FR");
 
-  static DisplayObject SuspPosRL(0, tft.height());
+  static DisplayObject SuspPosRL(0, yPrintln(&SuspPosFL_Text)+12);
   SuspPosRL.size = 3;
-  SuspPosRL.writeBottomLeftText(Susp_Pos_RL_Sensor.value);
+  SuspPosRL.writeTopLeftText(Susp_Pos_RL_Sensor.value);
 
-  static DisplayObject SuspPosRL_Text(0, negyPrintln(&SuspPosRL));
+  static DisplayObject SuspPosRL_Text(0, yPrintln(&SuspPosRL));
   SuspPosRL_Text.size = 2;
-  SuspPosRL_Text.writeBottomLeftText("Pos RL");
+  SuspPosRL_Text.writeTopLeftText("Pos RL");
 
-  static DisplayObject SuspPosRR(tft.width(), tft.height());
+  static DisplayObject SuspPosRR(tft.width(), yPrintln(&SuspPosFR_Text)+12);
   SuspPosRR.size = 3;
-  SuspPosRR.writeBottomRightText(Susp_Pos_RR_Sensor.value);
+  SuspPosRR.writeTopRightText(Susp_Pos_RR_Sensor.value);
 
-  static DisplayObject SuspPosRR_Text(tft.width(), negyPrintln(&SuspPosRR));
+  static DisplayObject SuspPosRR_Text(tft.width(), yPrintln(&SuspPosRR));
   SuspPosRR_Text.size = 2;
-  SuspPosRR_Text.writeBottomRightText("Pos RR");
+  SuspPosRR_Text.writeTopRightText("Pos RR");
 
-  static DisplayObject wAngle(tft.width()/2, tft.height() / 2);
+  /*static DisplayObject wAngle(tft.width()/2, tft.height() / 2);
   wAngle.size = 3;
   wAngle.writeCenterText(SteerWheel_Pos_Sensor.value);
 
   static DisplayObject wAngle_Text(tft.width()/2, yPrintln(&wAngle));
   wAngle_Text.size = 2;
-    wAngle_Text.writeCenterText("Wheel");
+    wAngle_Text.writeCenterText("Wheel");*/
 
   
 

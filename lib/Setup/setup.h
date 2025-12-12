@@ -87,6 +87,7 @@ void fn_Group_0(__u8 data[GROUP0_DLC]);
 void fn_Group_1(__u8 data[GROUP1_DLC]);
 void fn_Group_2(__u8 data[GROUP2_DLC]);
 void fn_Group_3(__u8 data[GROUP3_DLC]);
+void fn_Group_4(__u8 data[GROUP4_DLC]);
 void fn_Group_7(__u8 data[GROUP7_DLC]);
 void fn_Group_8(__u8 data[GROUP8_DLC]);
 void fn_Group_9(__u8 data[GROUP9_DLC]);
@@ -116,7 +117,7 @@ void sensorUpdate(T value, __u8 index);
 #define TIMEBASE 100
 #define BUFFER_LENGTH TIMEBASE/SD_TASK_TIMER
 #define BUFFER_NUMBER 2
-#define MAX_SENSORS 55
+#define MAX_SENSORS 95
 #define BUFFER_SIZE 7
 
 #define BTN_RETURN GPIO_NUM_36

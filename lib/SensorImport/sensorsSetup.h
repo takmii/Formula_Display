@@ -76,6 +76,10 @@ extern Sensor MS2_AFR1;
 extern Sensor MS2_AFR2;
 extern Sensor MS2_Lambda;
 extern Sensor MS2_Cold_Adv;
+extern Sensor MS2_knockIn;
+extern Sensor MS2_egoCorr1;
+extern Sensor MS2_egoCorr2;
+extern Sensor MS2_aircor;
 extern Sensor MS2_TPS_Rate;
 extern Sensor MS2_MAP_Rate;
 extern Sensor MS2_RPM_Rate;
@@ -101,6 +105,8 @@ extern Sensor Wing_Extensometer_4_Sensor;
 extern Sensor SD_Status;
 extern Sensor AccGyro_Status;
 extern Sensor SensorCheck_Status;
+extern Sensor Task_Delta_Time_Status;
+extern Sensor Task_Total_Time_Status;
     
 
 // Formato para adicionar mais sensores " extern Sensor SensorVariable "

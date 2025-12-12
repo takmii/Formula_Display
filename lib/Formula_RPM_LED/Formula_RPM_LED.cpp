@@ -1,7 +1,7 @@
 #include "Formula_RPM_LED.h"
 
 void updateRPM(unsigned short RPM){
-    const static unsigned short minValue=0;
+    const static unsigned short minValue=3000;
     const static unsigned short maxValue=12000;
     const static unsigned short prop = (maxValue-minValue)/10;
     unsigned short RPM_Value = constrain(RPM, 0, maxValue);

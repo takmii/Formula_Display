@@ -1081,13 +1081,21 @@ void mainScreen()
   SensorError.size=3;
   SensorError.writeBottomRightText(SensorCheck_Status.value);
 
-  static DisplayObject OilP(0,yPrintln(&Line1));
+  /*static DisplayObject OilP(0,yPrintln(&Line1));
   OilP.size=3;
   OilP.writeTopLeftText(Oil_Pressure_Sensor.value);
 
   static DisplayObject OilP_text(0,yPrintln(&OilP));
   OilP_text.size=2;
-  OilP_text.writeTopLeftText("Oil_P");
+  OilP_text.writeTopLeftText("Oil_P");*/
+
+static DisplayObject MapMS2(0,yPrintln(&Line1));
+  MapMS2.size=3;
+  MapMS2.writeTopLeftText(MS2_MAP.value);
+
+  static DisplayObject MapMS2_text(0,yPrintln(&MapMS2));
+  MapMS2_text.size=2;
+  MapMS2_text.writeTopLeftText("MAP");
 
   //static DisplayObject MAF(tft.width()/2,negyPrintln(&Line2));
   //MAF.size=3;
@@ -1105,7 +1113,7 @@ void mainScreen()
   xAcc_text.size=2;
   xAcc_text.writeTopRightText("Ac_Lat");
 
-  static DisplayObject deltaTime(0,negyPrintln(&Line2));
+  /*static DisplayObject deltaTime(0,negyPrintln(&Line2));
   deltaTime.size=3;
   deltaTime.writeBottomLeftText(Task_Delta_Time_Status.value);
 
@@ -1119,7 +1127,7 @@ void mainScreen()
 
   static DisplayObject totalTime_text(tft.width(),negyPrintln(&totalTime));
   totalTime_text.size=2;
-  totalTime_text.writeBottomRightText("Total");
+  totalTime_text.writeBottomRightText("Total");*/
 
   /*static DisplayObject AcX(0,negyPrintln(&Line2));
   AcX.size=3;

@@ -87,6 +87,43 @@ Sensor Wing_Extensometer_1_Sensor;
 Sensor Wing_Extensometer_2_Sensor;
 Sensor Wing_Extensometer_3_Sensor;
 Sensor Wing_Extensometer_4_Sensor;
+
+Sensor Corner_AccX_FR;
+Sensor Corner_AccY_FR;
+Sensor Corner_AccZ_FR;
+Sensor Corner_AccMOD_FR;
+Sensor Corner_GyroX_FR;
+Sensor Corner_GyroY_FR;
+Sensor Corner_GyroZ_FR;
+Sensor Corner_AccX_FL;
+Sensor Corner_AccY_FL;
+Sensor Corner_AccZ_FL;
+Sensor Corner_AccMOD_FL;
+Sensor Corner_GyroX_FL;
+Sensor Corner_GyroY_FL;
+Sensor Corner_GyroZ_FL;
+Sensor Corner_AccX_RR;
+Sensor Corner_AccY_RR;
+Sensor Corner_AccZ_RR;
+Sensor Corner_AccMOD_RR;
+Sensor Corner_GyroX_RR;
+Sensor Corner_GyroY_RR;
+Sensor Corner_GyroZ_RR;
+Sensor Corner_AccX_RL;
+Sensor Corner_AccY_RL;
+Sensor Corner_AccZ_RL;
+Sensor Corner_AccMOD_RL;
+Sensor Corner_GyroX_RL;
+Sensor Corner_GyroY_RL;
+Sensor Corner_GyroZ_RL;
+Sensor Corner_AccX_CG;
+Sensor Corner_AccY_CG;
+Sensor Corner_AccZ_CG;
+Sensor Corner_AccMOD_CG;
+Sensor Corner_GyroX_CG;
+Sensor Corner_GyroY_CG;
+Sensor Corner_GyroZ_CG;
+
 Sensor SD_Status;
 Sensor AccGyro_Status;
 Sensor SensorCheck_Status;
@@ -181,6 +218,41 @@ Sensor *sensorIndex[] = {
     &Wing_Extensometer_2_Sensor,
     &Wing_Extensometer_3_Sensor,
     &Wing_Extensometer_4_Sensor,
+    &Corner_AccX_FR,
+    &Corner_AccY_FR,
+    &Corner_AccZ_FR,
+    &Corner_AccMOD_FR,
+    &Corner_GyroX_FR,
+    &Corner_GyroY_FR,
+    &Corner_GyroZ_FR,
+    &Corner_AccX_FL,
+    &Corner_AccY_FL,
+    &Corner_AccZ_FL,
+    &Corner_AccMOD_FL,
+    &Corner_GyroX_FL,
+    &Corner_GyroY_FL,
+    &Corner_GyroZ_FL,
+    &Corner_AccX_RR,
+    &Corner_AccY_RR,
+    &Corner_AccZ_RR,
+    &Corner_AccMOD_RR,
+    &Corner_GyroX_RR,
+    &Corner_GyroY_RR,
+    &Corner_GyroZ_RR,
+    &Corner_AccX_RL,
+    &Corner_AccY_RL,
+    &Corner_AccZ_RL,
+    &Corner_AccMOD_RL,
+    &Corner_GyroX_RL,
+    &Corner_GyroY_RL,
+    &Corner_GyroZ_RL,
+    &Corner_AccX_CG,
+    &Corner_AccY_CG,
+    &Corner_AccZ_CG,
+    &Corner_AccMOD_CG,
+    &Corner_GyroX_CG,
+    &Corner_GyroY_CG,
+    &Corner_GyroZ_CG,
     &SD_Status,
     &AccGyro_Status,
     &SensorCheck_Status,
@@ -287,4 +359,39 @@ void setSensorName()
     Wing_Extensometer_2_Sensor.name = "Wing_Ext_2 (mm)";
     Wing_Extensometer_3_Sensor.name = "Wing_Ext_3 (mm)";
     Wing_Extensometer_4_Sensor.name = "Wing_Ext_4 (mm)";
+    Corner_AccX_FR.name = "Corner_AccX_FR (G)";
+    Corner_AccY_FR.name = "Corner_AccY_FR (G)";
+    Corner_AccZ_FR.name = "Corner_AccZ_FR (G)";
+    Corner_AccMOD_FR.name = "Corner_AccMOD_FR (G)";
+    Corner_GyroX_FR.name = "Corner_GyroX_FR (º/s)";
+    Corner_GyroY_FR.name = "Corner_GyroY_FR (º/s)";
+    Corner_GyroZ_FR.name = "Corner_GyroZ_FR (º/s)";
+    Corner_AccX_FL.name = "Corner_AccX_FL (G)";
+    Corner_AccY_FL.name = "Corner_AccY_FL (G)";
+    Corner_AccZ_FL.name = "Corner_AccZ_FL (G)";
+    Corner_AccMOD_FL.name = "Corner_AccMOD_FL (G)";
+    Corner_GyroX_FL.name = "Corner_GyroX_FL (º/s)";
+    Corner_GyroY_FL.name = "Corner_GyroY_FL (º/s)";
+    Corner_GyroZ_FL.name = "Corner_GyroZ_FL (º/s)";
+    Corner_AccX_RR.name = "Corner_AccX_RR (G)";
+    Corner_AccY_RR.name = "Corner_AccY_RR (G)";
+    Corner_AccZ_RR.name = "Corner_AccZ_RR (G)";
+    Corner_AccMOD_RR.name = "Corner_AccMOD_RR (G)";
+    Corner_GyroX_RR.name = "Corner_GyroX_RR (º/s)";
+    Corner_GyroY_RR.name = "Corner_GyroY_RR (º/s)";
+    Corner_GyroZ_RR.name = "Corner_GyroZ_RR (º/s)";
+    Corner_AccX_RL.name = "Corner_AccX_RL (G)";
+    Corner_AccY_RL.name = "Corner_AccY_RL (G)";
+    Corner_AccZ_RL.name = "Corner_AccZ_RL (G)";
+    Corner_AccMOD_RL.name = "Corner_AccMOD_RL (G)";
+    Corner_GyroX_RL.name = "Corner_GyroX_RL (º/s)";
+    Corner_GyroY_RL.name = "Corner_GyroY_RL (º/s)";
+    Corner_GyroZ_RL.name = "Corner_GyroZ_RL (º/s)";
+    Corner_AccX_CG.name = "Corner_AccX_CG (G)";
+    Corner_AccY_CG.name = "Corner_AccY_CG (G)";
+    Corner_AccZ_CG.name = "Corner_AccZ_CG (G)";
+    Corner_AccMOD_CG.name = "Corner_AccMOD_CG (G)";
+    Corner_GyroX_CG.name = "Corner_GyroX_CG (º/s)";
+    Corner_GyroY_CG.name = "Corner_GyroY_CG (º/s)";
+    Corner_GyroZ_CG.name = "Corner_GyroZ_CG (º/s)";
 }

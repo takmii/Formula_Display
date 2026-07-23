@@ -82,6 +82,17 @@ void fn_GYRO(__u8 data[GYRO_DLC]);
 void fn_Debug(__u8 data[DEBUG_DLC]);
 void sensor_ErrorHandler(__u8 data[ERROR_CHECK_DLC]);
 
+void fn_Corner_Acc_FR(__u8 data[CORNER_MODULE_ACC_FR_DLC]);
+void fn_Corner_Gyro_FR(__u8 data[CORNER_MODULE_GYRO_FR_DLC]);
+void fn_Corner_Acc_FL(__u8 data[CORNER_MODULE_ACC_FL_DLC]);
+void fn_Corner_Gyro_FL(__u8 data[CORNER_MODULE_GYRO_FL_DLC]);
+void fn_Corner_Acc_RR(__u8 data[CORNER_MODULE_ACC_RR_DLC]);
+void fn_Corner_Gyro_RR(__u8 data[CORNER_MODULE_GYRO_RR_DLC]);
+void fn_Corner_Acc_RL(__u8 data[CORNER_MODULE_ACC_RL_DLC]);
+void fn_Corner_Gyro_RL(__u8 data[CORNER_MODULE_GYRO_RL_DLC]);
+void fn_Corner_Acc_CG(__u8 data[CORNER_MODULE_ACC_CG_DLC]);
+void fn_Corner_Gyro_CG(__u8 data[CORNER_MODULE_GYRO_CG_DLC]);
+
 
 void fn_Group_0(__u8 data[GROUP0_DLC]);
 void fn_Group_1(__u8 data[GROUP1_DLC]);

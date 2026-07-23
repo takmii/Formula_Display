@@ -532,6 +532,38 @@ void CAN_setSensor(const __u8 *canData, __u8 canPacketSize, __u32 canId)
     fn_Data_10(data);
     break;
 
+  case CORNER_MODULE_ACC_FR_ID:
+    fn_Corner_Acc_FR(data);
+    break;
+  case CORNER_MODULE_GYRO_FR_ID:
+    fn_Corner_Gyro_FR(data);
+    break;
+  case CORNER_MODULE_ACC_FL_ID:
+    fn_Corner_Acc_FL(data);
+    break;
+  case CORNER_MODULE_GYRO_FL_ID:
+    fn_Corner_Gyro_FL(data);
+    break;
+  case CORNER_MODULE_ACC_RR_ID:
+    fn_Corner_Acc_RR(data);
+    break;
+  case CORNER_MODULE_GYRO_RR_ID:
+    fn_Corner_Gyro_RR(data);
+    break;
+  case CORNER_MODULE_ACC_RL_ID:
+    fn_Corner_Acc_RL(data);
+    break;
+  case CORNER_MODULE_GYRO_RL_ID:
+    fn_Corner_Gyro_RL(data);
+    break;
+
+  case CORNER_MODULE_ACC_CG_ID:
+    fn_Corner_Acc_CG(data);
+    break;
+  case CORNER_MODULE_GYRO_CG_ID:
+    fn_Corner_Gyro_CG(data);
+    break;
+
   case BUFFER_ACK_ID:
     fn_Buffer_Ack(data);
     break;
@@ -1027,14 +1059,13 @@ void mainScreen()
 {
   displaySetScreen(mainScreen_ID);
 
-  //static DisplayObject Gear(tft.width() / 2, tft.height() / 2);
-  //Gear.size = 7;
-  //Gear.writeCenterText(Gear_Pos_Sens.value);
+  static DisplayObject Gear(tft.width() / 2, tft.height() / 2);
+  Gear.size = 7;
+  Gear.writeCenterText(Gear_Pos_Sens.value);
 
-  //static DisplayObject Gear_Text(tft.width() / 2, yPrintln(&Gear));
-  //Gear_Text.size = 2;
-  //Gear_Text.writeTopCenterText("GEAR");
-
+  static DisplayObject Gear_Text(tft.width() / 2, yPrintln(&Gear));
+  Gear_Text.size = 2;
+  Gear_Text.writeTopCenterText("GEAR");
   
 
   static DisplayObject RPM(0, 0);
@@ -1065,13 +1096,6 @@ void mainScreen()
   static DisplayObject Line3(xPrintln(&StatusSD),Line2.pos_y);
   Line3.drawYline(tft.height()-Line3.pos_y);
 
-  static DisplayObject sWheel(tft.width() / 2, negyPrintln(&Line2));
-  sWheel.size = 3;
-  sWheel.writeBottomCenterText(SteerWheel_Pos_Sensor.value);
-
-  static DisplayObject sWheel_Text(tft.width() / 2, negyPrintln(&sWheel));
-  sWheel_Text.size = 2;
-  sWheel_Text.writeBottomCenterText("St_Wheel");
 
   static DisplayObject StatusAccelGyro(xPrintln(&Line3),tft.height());
   StatusAccelGyro.size=3;
@@ -1081,78 +1105,13 @@ void mainScreen()
   SensorError.size=3;
   SensorError.writeBottomRightText(SensorCheck_Status.value);
 
-  /*static DisplayObject OilP(0,yPrintln(&Line1));
-  OilP.size=3;
-  OilP.writeTopLeftText(Oil_Pressure_Sensor.value);
+static DisplayObject WaterTemp(0,yPrintln(&Line1));
+  WaterTemp.size=3;
+  WaterTemp.writeTopLeftText(MS2_CLT.value + "C");
 
-  static DisplayObject OilP_text(0,yPrintln(&OilP));
-  OilP_text.size=2;
-  OilP_text.writeTopLeftText("Oil_P");*/
-
-static DisplayObject MapMS2(0,yPrintln(&Line1));
-  MapMS2.size=3;
-  MapMS2.writeTopLeftText(MS2_MAP.value);
-
-  static DisplayObject MapMS2_text(0,yPrintln(&MapMS2));
-  MapMS2_text.size=2;
-  MapMS2_text.writeTopLeftText("MAP");
-
-  //static DisplayObject MAF(tft.width()/2,negyPrintln(&Line2));
-  //MAF.size=3;
-  //MAF.writeBottomCenterText(MAF_Sensor.value);
-
-  //static DisplayObject MAF_text(tft.width()/2,negyPrintln(&MAF));
-  //MAF_text.size=2;
-  //MAF_text.writeBottomCenterText("MAF");
-
-  static DisplayObject xAcc(tft.width(),yPrintln(&Line1));
-  xAcc.size=3;
-  xAcc.writeTopRightText(Accel_X.value);
-
-  static DisplayObject xAcc_text(tft.width(),yPrintln(&xAcc));
-  xAcc_text.size=2;
-  xAcc_text.writeTopRightText("Ac_Lat");
-
-  /*static DisplayObject deltaTime(0,negyPrintln(&Line2));
-  deltaTime.size=3;
-  deltaTime.writeBottomLeftText(Task_Delta_Time_Status.value);
-
-  static DisplayObject deltaTime_text(0,negyPrintln(&deltaTime));
-  deltaTime_text.size=2;
-  deltaTime_text.writeBottomLeftText("Delta");
-
-  static DisplayObject totalTime(tft.width(),negyPrintln(&Line2));
-  totalTime.size=3;
-  totalTime.writeBottomRightText(Task_Total_Time_Status.value);
-
-  static DisplayObject totalTime_text(tft.width(),negyPrintln(&totalTime));
-  totalTime_text.size=2;
-  totalTime_text.writeBottomRightText("Total");*/
-
-  /*static DisplayObject AcX(0,negyPrintln(&Line2));
-  AcX.size=3;
-  AcX.writeBottomLeftText(Accel_X.value);
-
-  static DisplayObject AcX_text(0,negyPrintln(&AcX));
-  AcX_text.size=2;
-  AcX_text.writeBottomLeftText("AcX");
-
-  static DisplayObject AcY(tft.width()/2,negyPrintln(&Line2));
-  AcY.size=3;
-  AcY.writeBottomCenterText(Accel_Y.value);
-
-  static DisplayObject AcY_text(tft.width()/2,negyPrintln(&AcY));
-  AcY_text.size=2;
-  AcY_text.writeBottomCenterText("AcY");
-
-  static DisplayObject AcZ(tft.width(),negyPrintln(&Line2));
-  AcZ.size=3;
-  AcZ.writeBottomRightText(Accel_Z.value);
-
-  static DisplayObject AcZ_text(tft.width(),negyPrintln(&AcZ));
-  AcZ_text.size=2;
-  AcZ_text.writeBottomRightText("AcZ");*/
-
+  static DisplayObject WaterTemp_text(0,yPrintln(&WaterTemp));
+  WaterTemp_text.size=2;
+  WaterTemp_text.writeTopLeftText("CLT");
 
 }
 
@@ -1790,4 +1749,159 @@ void fn_Group_15(__u8 data[GROUP15_DLC])
   float OilPress = MS2_Float_Calibration(r_OilPress,MS2_1_cal,MS2_10_cal);
 
   sensorUpdate(OilPress, Oil_Pressure_Sensor.index);
+}
+
+void fn_Corner_Acc_FR(__u8 data[CORNER_MODULE_ACC_FR_DLC]){
+    __s16 r_Acc_X = (data[1] << 8) | data[0];
+    __s16 r_Acc_Y = (data[3] << 8) | data[2];
+    __s16 r_Acc_Z = (data[5] << 8) | data[4];
+    __s16 r_Acc_MOD = (data[7] << 8) | data[6];
+
+    float Acc_X = (float)r_Acc_X / 8192.0f;
+    float Acc_Y = (float)r_Acc_Y / 8192.0f;
+    float Acc_Z = (float)r_Acc_Z / 8192.0f;
+    float Acc_MOD = (float)r_Acc_MOD / 8192.0f;
+
+  sensorUpdate(Acc_X, Corner_AccX_FR.index);
+  sensorUpdate(Acc_Y, Corner_AccY_FR.index);
+  sensorUpdate(Acc_Z, Corner_AccZ_FR.index);
+  sensorUpdate(Acc_MOD, Corner_AccMOD_FR.index);
+}
+
+void fn_Corner_Acc_FL(__u8 data[CORNER_MODULE_ACC_FL_DLC]){
+    __s16 r_Acc_X = (data[1] << 8) | data[0];
+    __s16 r_Acc_Y = (data[3] << 8) | data[2];
+    __s16 r_Acc_Z = (data[5] << 8) | data[4];
+    __s16 r_Acc_MOD = (data[7] << 8) | data[6];
+
+    float Acc_X = (float)r_Acc_X / 8192.0f;
+    float Acc_Y = (float)r_Acc_Y / 8192.0f;
+    float Acc_Z = (float)r_Acc_Z / 8192.0f;
+    float Acc_MOD = (float)r_Acc_MOD / 8192.0f;
+
+  sensorUpdate(Acc_X, Corner_AccX_FL.index);
+  sensorUpdate(Acc_Y, Corner_AccY_FL.index);
+  sensorUpdate(Acc_Z, Corner_AccZ_FL.index);
+  sensorUpdate(Acc_MOD, Corner_AccMOD_FL.index);
+}
+
+void fn_Corner_Acc_RR(__u8 data[CORNER_MODULE_ACC_RR_DLC]){
+    __s16 r_Acc_X = (data[1] << 8) | data[0];
+    __s16 r_Acc_Y = (data[3] << 8) | data[2];
+    __s16 r_Acc_Z = (data[5] << 8) | data[4];
+    __s16 r_Acc_MOD = (data[7] << 8) | data[6];
+
+    float Acc_X = (float)r_Acc_X / 8192.0f;
+    float Acc_Y = (float)r_Acc_Y / 8192.0f;
+    float Acc_Z = (float)r_Acc_Z / 8192.0f;
+    float Acc_MOD = (float)r_Acc_MOD / 8192.0f;
+
+  sensorUpdate(Acc_X, Corner_AccX_RR.index);
+  sensorUpdate(Acc_Y, Corner_AccY_RR.index);
+  sensorUpdate(Acc_Z, Corner_AccZ_RR.index);
+  sensorUpdate(Acc_MOD, Corner_AccMOD_RR.index);
+}
+
+void fn_Corner_Acc_RL(__u8 data[CORNER_MODULE_ACC_RL_DLC]){
+    __s16 r_Acc_X = (data[1] << 8) | data[0];
+    __s16 r_Acc_Y = (data[3] << 8) | data[2];
+    __s16 r_Acc_Z = (data[5] << 8) | data[4];
+    __s16 r_Acc_MOD = (data[7] << 8) | data[6];
+
+    float Acc_X = (float)r_Acc_X / 8192.0f;
+    float Acc_Y = (float)r_Acc_Y / 8192.0f;
+    float Acc_Z = (float)r_Acc_Z / 8192.0f;
+    float Acc_MOD = (float)r_Acc_MOD / 8192.0f;
+
+  sensorUpdate(Acc_X, Corner_AccX_RL.index);
+  sensorUpdate(Acc_Y, Corner_AccY_RL.index);
+  sensorUpdate(Acc_Z, Corner_AccZ_RL.index);
+  sensorUpdate(Acc_MOD, Corner_AccMOD_RL.index);
+}
+
+void fn_Corner_Acc_CG(__u8 data[CORNER_MODULE_ACC_CG_DLC]){
+    __s16 r_Acc_X = (data[1] << 8) | data[0];
+    __s16 r_Acc_Y = (data[3] << 8) | data[2];
+    __s16 r_Acc_Z = (data[5] << 8) | data[4];
+    __s16 r_Acc_MOD = (data[7] << 8) | data[6];
+
+    float Acc_X = (float)r_Acc_X / 8192.0f;
+    float Acc_Y = (float)r_Acc_Y / 8192.0f;
+    float Acc_Z = (float)r_Acc_Z / 8192.0f;
+    float Acc_MOD = (float)r_Acc_MOD / 8192.0f;
+
+  sensorUpdate(Acc_X, Corner_AccX_CG.index);
+  sensorUpdate(Acc_Y, Corner_AccY_CG.index);
+  sensorUpdate(Acc_Z, Corner_AccZ_CG.index);
+  sensorUpdate(Acc_MOD, Corner_AccMOD_CG.index);
+}
+
+void fn_Corner_Gyro_FR(__u8 data[CORNER_MODULE_GYRO_FR_DLC]){
+    __s16 r_Gyro_X = (data[1] << 8) | data[0];
+    __s16 r_Gyro_Y = (data[3] << 8) | data[2];
+    __s16 r_Gyro_Z = (data[5] << 8) | data[4];
+
+    float Gyro_X = (float)r_Gyro_X / 65.5f;
+    float Gyro_Y = (float)r_Gyro_Y / 65.5f;
+    float Gyro_Z = (float)r_Gyro_Z / 65.5f;
+
+  sensorUpdate(Gyro_X, Corner_GyroX_FR.index);
+  sensorUpdate(Gyro_Y, Corner_GyroY_FR.index);
+  sensorUpdate(Gyro_Z, Corner_GyroZ_FR.index);
+}
+
+void fn_Corner_Gyro_FL(__u8 data[CORNER_MODULE_GYRO_FL_DLC]){
+   __s16 r_Gyro_X = (data[1] << 8) | data[0];
+    __s16 r_Gyro_Y = (data[3] << 8) | data[2];
+    __s16 r_Gyro_Z = (data[5] << 8) | data[4];
+
+    float Gyro_X = (float)r_Gyro_X / 65.5f;
+    float Gyro_Y = (float)r_Gyro_Y / 65.5f;
+    float Gyro_Z = (float)r_Gyro_Z / 65.5f;
+
+  sensorUpdate(Gyro_X, Corner_GyroX_FL.index);
+  sensorUpdate(Gyro_Y, Corner_GyroY_FL.index);
+  sensorUpdate(Gyro_Z, Corner_GyroZ_FL.index);
+}
+
+void fn_Corner_Gyro_RR(__u8 data[CORNER_MODULE_GYRO_RR_DLC]){
+    __s16 r_Gyro_X = (data[1] << 8) | data[0];
+    __s16 r_Gyro_Y = (data[3] << 8) | data[2];
+    __s16 r_Gyro_Z = (data[5] << 8) | data[4];
+
+    float Gyro_X = (float)r_Gyro_X / 65.5f;
+    float Gyro_Y = (float)r_Gyro_Y / 65.5f;
+    float Gyro_Z = (float)r_Gyro_Z / 65.5f;
+
+  sensorUpdate(Gyro_X, Corner_GyroX_RR.index);
+  sensorUpdate(Gyro_Y, Corner_GyroY_RR.index);
+  sensorUpdate(Gyro_Z, Corner_GyroZ_RR.index);
+}
+
+void fn_Corner_Gyro_RL(__u8 data[CORNER_MODULE_GYRO_RL_DLC]){
+    __s16 r_Gyro_X = (data[1] << 8) | data[0];
+    __s16 r_Gyro_Y = (data[3] << 8) | data[2];
+    __s16 r_Gyro_Z = (data[5] << 8) | data[4];
+
+    float Gyro_X = (float)r_Gyro_X / 65.5f;
+    float Gyro_Y = (float)r_Gyro_Y / 65.5f;
+    float Gyro_Z = (float)r_Gyro_Z / 65.5f;
+
+  sensorUpdate(Gyro_X, Corner_GyroX_RL.index);
+  sensorUpdate(Gyro_Y, Corner_GyroY_RL.index);
+  sensorUpdate(Gyro_Z, Corner_GyroZ_RL.index);
+}
+
+void fn_Corner_Gyro_CG(__u8 data[CORNER_MODULE_GYRO_CG_DLC]){
+   __s16 r_Gyro_X = (data[1] << 8) | data[0];
+    __s16 r_Gyro_Y = (data[3] << 8) | data[2];
+    __s16 r_Gyro_Z = (data[5] << 8) | data[4];
+
+    float Gyro_X = (float)r_Gyro_X / 65.5f;
+    float Gyro_Y = (float)r_Gyro_Y / 65.5f;
+    float Gyro_Z = (float)r_Gyro_Z / 65.5f;
+
+  sensorUpdate(Gyro_X, Corner_GyroX_CG.index);
+  sensorUpdate(Gyro_Y, Corner_GyroY_CG.index);
+  sensorUpdate(Gyro_Z, Corner_GyroZ_CG.index);
 }

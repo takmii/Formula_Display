@@ -61,6 +61,36 @@ const __u8 BUFFER_ACK_DLC = 3;
 const __u8 TEMP_ID = 0x0C;
 const __u8 TEMP_DLC = 8;
 
+const __u8 CORNER_MODULE_ACC_FR_ID = 0x20;
+const __u8 CORNER_MODULE_ACC_FR_DLC = 8;
+
+const __u8 CORNER_MODULE_GYRO_FR_ID = 0x21;
+const __u8 CORNER_MODULE_GYRO_FR_DLC = 6;
+
+const __u8 CORNER_MODULE_ACC_FL_ID = 0x22;
+const __u8 CORNER_MODULE_ACC_FL_DLC = 8;
+
+const __u8 CORNER_MODULE_GYRO_FL_ID = 0x23;
+const __u8 CORNER_MODULE_GYRO_FL_DLC = 6;
+
+const __u8 CORNER_MODULE_ACC_RR_ID = 0x24;
+const __u8 CORNER_MODULE_ACC_RR_DLC = 8;
+
+const __u8 CORNER_MODULE_GYRO_RR_ID = 0x25;
+const __u8 CORNER_MODULE_GYRO_RR_DLC = 6;
+
+const __u8 CORNER_MODULE_ACC_RL_ID = 0x26;
+const __u8 CORNER_MODULE_ACC_RL_DLC = 8;
+
+const __u8 CORNER_MODULE_GYRO_RL_ID = 0x27;
+const __u8 CORNER_MODULE_GYRO_RL_DLC = 6;
+
+const __u8 CORNER_MODULE_ACC_CG_ID = 0x28;
+const __u8 CORNER_MODULE_ACC_CG_DLC = 8;
+
+const __u8 CORNER_MODULE_GYRO_CG_ID = 0x29;
+const __u8 CORNER_MODULE_GYRO_CG_DLC = 6;
+
 const __u8 ERROR_CHECK_ID = 0x0E;
 const __u8 ERROR_CHECK_DLC = 1;
 

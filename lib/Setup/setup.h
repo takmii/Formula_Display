@@ -156,6 +156,17 @@ const uint8_t debugScreen_ID = 255;
 const uint8_t font_size_const_y = 7;
 const uint8_t font_size_const_x = 4;
 
+typedef union {
+  float f;       // Para sensores como MPU6050 (4 bytes)
+  int32_t i;     // Para valores negativos inteiros (4 bytes)
+  uint32_t u;    // Para tempo ou contadores (4 bytes)
+} SensorValue;
+
+enum SensorType {
+  TYPE_FLOAT,
+  TYPE_INT,
+  TYPE_UINT
+};
 
 
 #endif

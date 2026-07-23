@@ -270,7 +270,7 @@ __u16 bg_color = DisplayObject::displayRGB(14, 3, 51);
 
 __u16 rpm_led = 0;
 
-char sensorValues[BUFFER_NUMBER][BUFFER_LENGTH][MAX_SENSORS][BUFFER_SIZE];
+//char sensorValues[BUFFER_NUMBER][BUFFER_LENGTH][MAX_SENSORS][BUFFER_SIZE];
 uint32_t timeValues[BUFFER_NUMBER][BUFFER_LENGTH];
 
 volatile bool buffer_write = 0;

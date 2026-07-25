@@ -347,7 +347,7 @@ void setup()
   digitalWrite(TFT_RST, HIGH);
 
   tft.init();
-  tft.setRotation(0);
+  tft.setRotation(2);
 
   tft.fillScreen(bg_color);
 
@@ -1113,6 +1113,21 @@ static DisplayObject WaterTemp(0,yPrintln(&Line1));
   WaterTemp_text.size=2;
   WaterTemp_text.writeTopLeftText("CLT");
 
+  static DisplayObject Lambda(tft.width(),yPrintln(&Line1));
+  Lambda.size=3;
+  Lambda.writeTopRightText(MS2_Lambda.value);
+
+  static DisplayObject Lambda_text(tft.width(),yPrintln(&Lambda));
+  Lambda_text.size=2;
+  Lambda_text.writeTopRightText("LBD");
+
+  static DisplayObject TPS(tft.width(),negyPrintln(&Line2));
+  TPS.size=3;
+  TPS.writeBottomRightText(MS2_TPS.value);
+
+  static DisplayObject TPS_text(tft.width(),negyPrintln(&TPS));
+  TPS_text.size=2;
+  TPS_text.writeBottomRightText("TPS");
 }
 
 void screen2()

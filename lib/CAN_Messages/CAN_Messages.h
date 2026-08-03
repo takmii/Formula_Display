@@ -91,6 +91,10 @@ const __u8 CORNER_MODULE_ACC_CG_DLC = 8;
 const __u8 CORNER_MODULE_GYRO_CG_ID = 0x29;
 const __u8 CORNER_MODULE_GYRO_CG_DLC = 6;
 
+const __u8 GEAR_ID = 0x40;
+const __u8 GEAR_DLC = 1;
+
+
 const __u8 ERROR_CHECK_ID = 0x0E;
 const __u8 ERROR_CHECK_DLC = 1;
 

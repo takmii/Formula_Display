@@ -39,6 +39,7 @@ Sensor Fuel_Pressure_Sensor;
 Sensor Fuel_Temperature_Sensor;
 Sensor Oil_Temperature_Sensor;
 Sensor Oil_Pressure_Sensor;
+Sensor Oil_Pressure_Sensor2;
 Sensor Intercooler_Temperature_Sensor;
 Sensor Intercooler_Pressure_Sensor;
 Sensor In_Cooling_Temperature_Sensor;
@@ -170,6 +171,7 @@ Sensor *sensorIndex[] = {
     &Fuel_Temperature_Sensor,
     &Oil_Temperature_Sensor,
     &Oil_Pressure_Sensor,
+    &Oil_Pressure_Sensor2,
     &Intercooler_Temperature_Sensor,
     &Intercooler_Pressure_Sensor,
     &In_Cooling_Temperature_Sensor,
@@ -311,6 +313,7 @@ void setSensorName()
     Fuel_Temperature_Sensor.name = "Fuel_Temp (ºC)";
     Oil_Temperature_Sensor.name = "Oil_Temp (ºC)";
     Oil_Pressure_Sensor.name = "Oil_Press (bar)";
+    Oil_Pressure_Sensor2.name = "Oil_Press 2 (bar)";
     Intercooler_Temperature_Sensor.name = "Intercooler_In_Temp (ºC)";
     Intercooler_Pressure_Sensor.name = "Intercooler_Out_Temp (ºC)";
     In_Cooling_Temperature_Sensor.name = "Cooling_In_Temp (ºC)";

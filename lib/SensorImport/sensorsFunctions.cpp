@@ -89,6 +89,11 @@ float tempOilSensor(__u16 value,double a,double b,double c){
   return roundf((1/((a) + (b*lR) + (c*lR3))-273.15) * 10.0f) / 10.0f;
 }
 
+float LambdaSensor(float AFR){
+  static const float k= 7.5;
+  return roundf((AFR/k) * 100.0f) / 100.0f;
+}
+
 
 /*float wheelAngleSensor(__u16 value){
   float prop = vRef_Proportion(value);

@@ -309,12 +309,12 @@ uint16_t negyPrintln(const DisplayObject *obj);
 uint16_t xPrintln(const DisplayObject *obj);
 uint16_t negxPrintln(const DisplayObject *obj);
 
-MAX6675 s_BrakeTempFR(V_CLK, CS_TEMP5, V_SO);
-MAX6675 s_BrakeTempFL(V_CLK, CS_TEMP6, V_SO);
-MAX6675 s_BrakeTempRR(V_CLK, CS_TEMP2, V_SO);
-MAX6675 s_BrakeTempRL(V_CLK, CS_TEMP3, V_SO);
-MAX6675 s_FirewallTemp1(V_CLK, CS_TEMP1, V_SO);
-MAX6675 s_FirewallTemp2(V_CLK, CS_TEMP4, V_SO);
+//MAX6675 s_BrakeTempFR(V_CLK, CS_TEMP5, V_SO);
+//MAX6675 s_BrakeTempFL(V_CLK, CS_TEMP6, V_SO);
+//MAX6675 s_BrakeTempRR(V_CLK, CS_TEMP2, V_SO);
+//MAX6675 s_BrakeTempRL(V_CLK, CS_TEMP3, V_SO);
+//MAX6675 s_FirewallTemp1(V_CLK, CS_TEMP1, V_SO);
+//MAX6675 s_FirewallTemp2(V_CLK, CS_TEMP4, V_SO);
 
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUM_LEDS, RPM_LED_PIN, NEO_GRB + NEO_KHZ800);
 
@@ -331,14 +331,20 @@ void setup()
   pinMode(BTN_RETURN, INPUT);
   pinMode(BTN_SELECT, INPUT);
 
+  pinMode(GEAR1, INPUT_PULLDOWN);
+  pinMode(GEAR2, INPUT_PULLDOWN);
+  pinMode(GEAR3, INPUT_PULLDOWN);
+  pinMode(GEAR4, INPUT_PULLDOWN);
+  pinMode(GEAR5, INPUT_PULLDOWN);
+  pinMode(GEAR6, INPUT_PULLDOWN);
    
    
 
-  if (WiFi.status() != WL_CONNECTED)
+  /*if (WiFi.status() != WL_CONNECTED)
   {
     WiFi.disconnect(true);
     WiFi.mode(WIFI_OFF);
-  }
+  }*/
   sensorLength = indexSetup();
   setSensorName();
 
@@ -395,6 +401,16 @@ void setup()
   );
 
   xTaskCreatePinnedToCore(
+      GearSensor_fn, // Function to implement the task
+      "Gear Sensor",       // Name of the task
+      1024,            // Stack size in words
+      NULL,            // Task input parameter
+      4,               // Priority of the task
+      NULL,            // Task handle
+      1                // Core where the task should run (0 or 1)
+  );
+
+  /*xTaskCreatePinnedToCore(
       temperatureTask, // Function to implement the task
       "Temperature",   // Name of the task
       4096,            // Stack size in words
@@ -402,7 +418,7 @@ void setup()
       1,               // Priority of the task
       NULL,            // Task handle
       1                // Core where the task should run (0 or 1)
-  );
+  );*/
 
   if (!debug_mode)
   {
@@ -655,17 +671,17 @@ void fn_Data_01(__u8 data[DATA_01_DLC])
   __u16 r_vBat = ((data[1] & 0x0F) << 8) + data[0];
   __u16 r_intTemp = (data[2] << 4) + ((data[1] >> 4) & 0x0F);
   __u16 r_vRef = ((data[4] & 0x0F) << 8) + data[3];
-  __u8 r_Gear = (data[4] >> 4) & 0x0F;
+  //__u8 r_Gear = (data[4] >> 4) & 0x0F;
 
   float vBat = vBatSensor(r_vBat);
   float vRef = vRefSensor(r_vRef);
   float intTemp = internalTemp(r_intTemp);
-  String Gear = Gear_Pos(r_Gear);
+  //String Gear = Gear_Pos(r_Gear);
 
   sensorUpdate(vBat, Voltage_Sensor.index);
   sensorUpdate(intTemp, Internal_Temperature_Sensor.index);
   sensorUpdate(vRef, V_Ref_Sensor.index);
-  sensorUpdate(Gear, Gear_Pos_Sens.index);
+  //sensorUpdate(Gear, Gear_Pos_Sens.index);
 }
 
 void fn_Data_02(__u8 data[DATA_02_DLC])
@@ -1059,14 +1075,22 @@ void mainScreen()
 {
   displaySetScreen(mainScreen_ID);
 
-  static DisplayObject Gear(tft.width() / 2, tft.height() / 2);
+  /*static DisplayObject Gear(tft.width() / 2, tft.height() / 2);
   Gear.size = 7;
   Gear.writeCenterText(Gear_Pos_Sens.value);
 
   static DisplayObject Gear_Text(tft.width() / 2, yPrintln(&Gear));
   Gear_Text.size = 2;
-  Gear_Text.writeTopCenterText("GEAR");
+  Gear_Text.writeTopCenterText("GEAR" );*/
   
+
+  static DisplayObject PressSens(tft.width() / 2, tft.height() / 2);
+  PressSens.size = 5;
+  PressSens.writeCenterText(Oil_Pressure_Sensor2.value);
+
+  static DisplayObject PressSens_Text(tft.width() / 2, yPrintln(&PressSens));
+  PressSens_Text.size = 2;
+  PressSens_Text.writeTopCenterText("BAR" );
 
   static DisplayObject RPM(0, 0);
   RPM.writeTopLeftText(RPM_Sensor.value);
@@ -1128,6 +1152,14 @@ static DisplayObject WaterTemp(0,yPrintln(&Line1));
   static DisplayObject TPS_text(tft.width(),negyPrintln(&TPS));
   TPS_text.size=2;
   TPS_text.writeBottomRightText("TPS");
+
+   /* static DisplayObject OilPressure(0,negyPrintln(&Line2));
+  OilPressure.size=3;
+  OilPressure.writeBottomLeftText(Oil_Pressure_Sensor.value);
+
+  static DisplayObject OilPressure_text(0,negyPrintln(&OilPressure));
+  OilPressure_text.size=2;
+  OilPressure_text.writeBottomLeftText("OilP");*/
 }
 
 void screen2()
@@ -1517,7 +1549,7 @@ uint16_t negxPrintln(const DisplayObject *obj)
   }
 }
 
-void temperatureTask(void *parameter)
+/*void temperatureTask(void *parameter)
 {
   TickType_t xLastWakeTime = xTaskGetTickCount();
   static uint8_t data[8];
@@ -1579,7 +1611,7 @@ float readTempC(MAX6675 *Sensor)
   float data = Sensor->readCelsius();
   data = std::isnan(data) ? 0.0f : data;
   return data;
-}
+}*/
 
 uint16_t floattoU16(float value, uint8_t precision_bits)
 {
@@ -1673,12 +1705,14 @@ void fn_Group_3(__u8 data[GROUP3_DLC])
   float Voltage = MS2_Float_Calibration(r_Voltage,MS2_1_cal,MS2_10_cal);
   float AFR1 = MS2_Float_Calibration(r_AFR1,MS2_1_cal,MS2_10_cal);
   float AFR2 = MS2_Float_Calibration(r_AFR2,MS2_1_cal,MS2_10_cal);
+  float Lambda = LambdaSensor(AFR1);
   
 
   sensorUpdate(TPS, MS2_TPS.index);
   sensorUpdate(Voltage, MS2_Voltage.index);
   sensorUpdate(AFR1, MS2_AFR1.index);
   sensorUpdate(AFR2, MS2_AFR2.index);
+  sensorUpdate(Lambda, MS2_Lambda.index);
 }
 
 void fn_Group_4(__u8 data[GROUP4_DLC])
@@ -1762,8 +1796,11 @@ void fn_Group_15(__u8 data[GROUP15_DLC])
   //__s16 r_O2_V2 = word(data[2],data[3]);
 
   float OilPress = MS2_Float_Calibration(r_OilPress,MS2_1_cal,MS2_10_cal);
+  float OilPressFiltered = 0.145*OilPress - 3.159;
+  String OilPFilt2 = String(OilPressFiltered,1);
 
-  sensorUpdate(OilPress, Oil_Pressure_Sensor.index);
+  sensorUpdate(OilPressFiltered, Oil_Pressure_Sensor.index);
+  sensorUpdate(OilPFilt2, Oil_Pressure_Sensor2.index);
 }
 
 void fn_Corner_Acc_FR(__u8 data[CORNER_MODULE_ACC_FR_DLC]){
@@ -1919,4 +1956,83 @@ void fn_Corner_Gyro_CG(__u8 data[CORNER_MODULE_GYRO_CG_DLC]){
   sensorUpdate(Gyro_X, Corner_GyroX_CG.index);
   sensorUpdate(Gyro_Y, Corner_GyroY_CG.index);
   sensorUpdate(Gyro_Z, Corner_GyroZ_CG.index);
+}
+
+void GearSensor_fn(void *parameter){
+{
+  TickType_t xLastWakeTime = xTaskGetTickCount();
+  const TickType_t xFrequency = pdMS_TO_TICKS(GEARSENSOR_TIMER);
+  uint8_t gear_set = 0;
+  uint8_t gear_counter = 0;
+  uint8_t gear_msg[1];
+  String gear;
+  for (;;)
+  {
+    gear_msg[0]=7;
+    gear="N";
+    gear_counter = 0;
+    gear_set = 0;
+    gear_set+=GearRead(GEAR1);
+    
+    if (gear_set){
+      gear="1";
+      gear_msg[0]=1;
+      gear_set=0;
+      gear_counter++;
+    }
+    gear_set+=GearRead(GEAR2);
+    if (gear_set){
+      gear="2";
+      gear_msg[0]=2;
+      gear_set=0;
+      gear_counter++;
+    }
+    gear_set+=GearRead(GEAR3);
+    if (gear_set){
+      gear="3";
+      gear_msg[0]=3;
+      gear_set=0;
+      gear_counter++;
+    }
+    gear_set+=GearRead(GEAR4);
+    if (gear_set){
+      gear="4";
+      gear_msg[0]=4;
+      gear_set=0;
+      gear_counter++;
+    }
+    gear_set+=GearRead(GEAR5);
+    if (gear_set){
+      gear="5";
+      gear_msg[0]=5;
+      gear_set=0;
+      gear_counter++;
+    }
+    gear_set+=GearRead(GEAR6);
+    if (gear_set){
+      gear="6";
+      gear_msg[0]=6;
+      gear_set=0;
+      gear_counter++;
+    }
+    if (gear_counter>1){
+      gear="E";
+      gear_msg[0]=8;
+    }
+    sensorUpdate(gear, Gear_Pos_Sens.index);
+    sendCANMessage(GEAR_ID, gear_msg, GEAR_DLC);
+
+    vTaskDelayUntil(&xLastWakeTime, xFrequency);
+  }
+}
+}
+bool GearRead(uint8_t Gear){
+  uint8_t n=0;
+  for (uint8_t i=0;i<5;i++){
+    n+=digitalRead(Gear);
+  }
+  if (n>0){
+    return 1;
+  }
+  return 0;
 }

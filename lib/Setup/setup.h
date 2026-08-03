@@ -21,7 +21,7 @@
 #include <formulaDisplay.h>
 #include <variables.h>
 #include <timeSetup.h>
-#include <max6675.h>
+//#include <max6675.h>
 #include <Formula_RPM_LED.h>
 
 extern TFT_eSPI tft;
@@ -53,6 +53,7 @@ void sendCANMessage(uint8_t id, uint8_t *data, uint8_t dlc);
 void Calibracao(void *parameter);
 void ScreenManager(void *parameter);
 void refreshRateTask(void *parameter);
+void GearSensor_fn(void *parameter);
 void CAN_receiveTask(void *parameter);
 void temperatureTask(void *parameter);
 void disableBluetooth();
@@ -104,7 +105,9 @@ void fn_Group_8(__u8 data[GROUP8_DLC]);
 void fn_Group_9(__u8 data[GROUP9_DLC]);
 void fn_Group_15(__u8 data[GROUP15_DLC]);
 
-float readTempC(MAX6675 * Sensor);
+bool GearRead(uint8_t Gear);
+
+//float readTempC(MAX6675 * Sensor);
 uint16_t floattoU16(float value, uint8_t precision_bits);
 
 void init_twai();
@@ -121,6 +124,7 @@ void sensorUpdate(T value, __u8 index);
 #define TEMPERATURE_TIMER 200
 #define CALIBRACAO_TIMER 500
 #define SD_TASK_TIMER CAN_TASK_TIMER
+#define GEARSENSOR_TIMER 5
 
 #define CAN_TX_PIN GPIO_NUM_22
 #define CAN_RX_PIN GPIO_NUM_21
@@ -137,13 +141,14 @@ void sensorUpdate(T value, __u8 index);
 #define BTN_SELECT GPIO_NUM_35
 
 #define V_SO GPIO_NUM_19
-#define V_CLK GPIO_NUM_18
-#define CS_TEMP1 GPIO_NUM_4
-#define CS_TEMP2 GPIO_NUM_16
-#define CS_TEMP3 GPIO_NUM_17
-#define CS_TEMP4 GPIO_NUM_15
-#define CS_TEMP5 GPIO_NUM_2
-#define CS_TEMP6 GPIO_NUM_0
+#define V_CLK GPIO_NUM_18 
+#define GEAR1 GPIO_NUM_4
+#define GEAR2 GPIO_NUM_16
+#define GEAR3 GPIO_NUM_17
+#define GEAR4 GPIO_NUM_15
+#define GEAR5 GPIO_NUM_2
+//#define GEAR6 GPIO_NUM_0
+#define GEAR6 GPIO_NUM_33
 
 #define RPM_LED_PIN GPIO_NUM_5
 
